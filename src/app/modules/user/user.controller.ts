@@ -1,21 +1,23 @@
-import status from "http-status";
-import { UserService } from "./user.service";
-import catchAsync from "../../utils/catchAsync";
-import sendResponse from "../../utils/sendResponse";
+import status from 'http-status';
+import { UserService } from './user.service';
+import catchAsync from '../../utils/catchAsync';
+import sendResponse from '../../utils/sendResponse';
 
 const createUser = catchAsync(async (req, res) => {
   const result = await UserService.createUserIntoDB(req.body);
 
-  res.cookie("accessToken", result.accessToken, {
+  res.cookie('accessToken', result.accessToken, {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
+    secure: process.env.NODE_ENV === 'production',
     sameSite: true,
     maxAge: 24 * 60 * 60 * 1000,
   });
 
   sendResponse(res, {
     statusCode: status.CREATED,
-    message: "Please check your email to active your account!",
+    success: true,
+    message: 'Please check your email to active your account!',
+    data: null,
   });
 });
 
@@ -24,7 +26,8 @@ const getAllUser = catchAsync(async (req, res) => {
 
   sendResponse(res, {
     statusCode: status.OK,
-    message: "Users are retrieved successfully!",
+    success: true,
+    message: 'Users are retrieved successfully!',
     data: result,
   });
 });
@@ -40,7 +43,8 @@ const updateUser = catchAsync(async (req, res) => {
 
   sendResponse(res, {
     statusCode: status.OK,
-    message: "User updated successfully!",
+    message: 'User updated successfully!',
+    success: true,
     data: result,
   });
 });
@@ -52,7 +56,9 @@ const deleteUser = catchAsync(async (req, res) => {
 
   sendResponse(res, {
     statusCode: status.OK,
-    message: "User deleted successfully!",
+    success: true,
+    message: 'User deleted successfully!',
+    data: null,
   });
 });
 

@@ -20,39 +20,41 @@ const prisma_1 = __importDefault(require("../../utils/prisma"));
 const auth_utils_1 = require("../auth/auth.utils");
 const user_utils_1 = require("./user.utils");
 const ApiError_1 = __importDefault(require("../../errors/ApiError"));
-const sendEmail_1 = require("../../utils/sendEmail");
 const verifyToken_1 = require("../../utils/verifyToken");
 const createUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     const isUserExist = yield prisma_1.default.user.findUnique({
         where: { email: payload.email },
     });
     if (isUserExist) {
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "User already exists");
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'User already exists');
     }
     const hashedPassword = yield (0, user_utils_1.hashPassword)(payload.password);
     const userData = Object.assign(Object.assign({}, payload), { password: hashedPassword });
-    yield prisma_1.default.user.create({
+    const res = yield prisma_1.default.user.create({
         data: userData,
     });
     const jwtPayload = {
-        fullName: payload.fullName,
+        firstName: payload.firstName,
+        lastName: payload.lastName,
         email: payload.email,
         profilePic: payload.profilePic,
         role: client_1.UserRole.USER,
         isActive: false,
     };
     const accessToken = (0, auth_utils_1.createToken)(jwtPayload, config_1.default.jwtAccessSecret, config_1.default.jwtAccessExpiresIn);
-    const confirmLink = `${config_1.default.backendUrl}/auth/active/${accessToken}`;
-    yield (0, sendEmail_1.sendEmail)(payload === null || payload === void 0 ? void 0 : payload.email, undefined, confirmLink);
+    // const confirmLink = `${config.backendUrl}/auth/active/${accessToken}`;
+    // await sendEmail(payload?.email, undefined, confirmLink);
     return {
         accessToken,
+        res,
     };
 });
 const getAllUserFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield prisma_1.default.user.findMany({
         select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             email: true,
             profilePic: true,
             role: true,
@@ -61,7 +63,7 @@ const getAllUserFromDB = () => __awaiter(void 0, void 0, void 0, function* () {
         },
     });
     if (!result) {
-        throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "Users not found!");
+        throw new ApiError_1.default(http_status_1.default.NOT_FOUND, 'Users not found!');
     }
     return result;
 });
@@ -71,10 +73,10 @@ const activeAccount = (token) => __awaiter(void 0, void 0, void 0, function* () 
         where: { email: decodedToken.email },
     });
     if (!user) {
-        throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "User not found!");
+        throw new ApiError_1.default(http_status_1.default.NOT_FOUND, 'User not found!');
     }
     if (user.isActive) {
-        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "User already active!");
+        throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, 'User already active!');
     }
     yield prisma_1.default.user.update({
         where: { email: decodedToken.email },
@@ -89,7 +91,7 @@ const updateUserIntoDB = (userId, payload) => __awaiter(void 0, void 0, void 0, 
         where: { id: userId },
     });
     if (!isUserExist) {
-        throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "User not found!");
+        throw new ApiError_1.default(http_status_1.default.NOT_FOUND, 'User not found!');
     }
     if (!payload.profilePic) {
         payload.profilePic = isUserExist.profilePic;
@@ -99,7 +101,8 @@ const updateUserIntoDB = (userId, payload) => __awaiter(void 0, void 0, void 0, 
         data: payload,
         select: {
             id: true,
-            fullName: true,
+            firstName: true,
+            lastName: true,
             email: true,
             profilePic: true,
             role: true,
@@ -115,7 +118,7 @@ const deleteUserFromDB = (userId) => __awaiter(void 0, void 0, void 0, function*
         where: { id: userId },
     });
     if (!isUserExist) {
-        throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "User not found!");
+        throw new ApiError_1.default(http_status_1.default.NOT_FOUND, 'User not found!');
     }
     yield prisma_1.default.user.delete({
         where: { id: userId },

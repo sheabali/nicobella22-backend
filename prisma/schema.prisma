@@ -1,3 +1,309 @@
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "mongodb"
+//   url      = env("DATABASE_URL")
+// }
+
+// enum UserRole {
+//   USER
+//   ADMIN
+// }
+
+// model User {
+//   id         String                @id @default(auto()) @map("_id") @db.ObjectId
+//   firstName  String
+//   lastName   String
+//   email      String                @unique
+//   password   String
+//   profilePic String?               @default("")
+//   isActive   Boolean               @default(false)
+//   role       UserRole              @default(USER)
+//   createdAt  DateTime              @default(now())
+//   updatedAt  DateTime              @updatedAt
+//   mechanicId String?               @db.ObjectId
+//   mechanic   MechanicRegistration? @relation(fields: [mechanicId], references: [id])
+//   invoices   Invoice[]
+//   Estimate   Estimate[]
+
+//   @@map("users")
+// }
+
+// model Photo {
+//   id    String  @id @default(auto()) @map("_id") @db.ObjectId
+//   image String? @default("")
+
+//   @@map("photos")
+// }
+
+// model MechanicRegistration {
+//   id              String   @id @default(auto()) @map("_id") @db.ObjectId
+//   firstName       String
+//   lastName        String
+//   email           String   @unique
+//   password        String
+//   phoneNumber     String
+//   country         String
+//   city            String
+//   zipCode         String
+//   servicesOffered String
+//   createdAt       DateTime @default(now())
+//   updatedAt       DateTime @updatedAt
+
+//   companies  Company[] // One-to-many: Mechanic → Companies
+//   WorkingDay WorkingDay[]
+//   User       User[]
+//   Estimate   Estimate[]
+//   Invoice    Invoice[]
+// }
+
+// model Company {
+//   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name        String
+//   address     String
+//   country     String
+//   city        String
+//   phoneNumber String
+//   email       String   @unique
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+
+//   mechanicId String?               @db.ObjectId
+//   mechanic   MechanicRegistration? @relation(fields: [mechanicId], references: [id])
+//   Invoice    Invoice[]
+// }
+
+// model WorkingDay {
+//   id        String  @id @default(auto()) @map("_id") @db.ObjectId
+//   day       String // e.g., "Sunday", "Monday", etc.
+//   isClosed  Boolean // true if closed, false if open
+//   openTime  String? // e.g., "06:00 AM" (nullable if closed)
+//   closeTime String? // e.g., "05:00 PM" (nullable if closed)
+
+//   mechanicId String?               @db.ObjectId
+//   mechanic   MechanicRegistration? @relation(fields: [mechanicId], references: [id])
+// }
+
+// model Estimate {
+//   id         String               @id @default(auto()) @map("_id") @db.ObjectId
+//   estimateId String               @unique // e.g., #12345
+//   userId     String               @db.ObjectId
+//   user       User                 @relation(fields: [userId], references: [id])
+//   mechanicId String               @db.ObjectId
+//   mechanic   MechanicRegistration @relation(fields: [mechanicId], references: [id])
+//   service    String
+//   amount     Float
+//   status     String               @default("Pending")
+//   date       DateTime             @default(now())
+//   createdAt  DateTime             @default(now())
+//   updatedAt  DateTime             @updatedAt
+
+//   invoices Invoice[]
+
+//   @@map("estimates")
+// }
+
+// model Invoice {
+//   id           String               @id @default(auto()) @map("_id") @db.ObjectId
+//   estimateId   String               @db.ObjectId
+//   estimate     Estimate             @relation(fields: [estimateId], references: [id])
+//   userId       String               @db.ObjectId
+//   user         User                 @relation(fields: [userId], references: [id])
+//   companyId    String               @db.ObjectId
+//   company      Company              @relation(fields: [companyId], references: [id])
+//   mechanicId   String               @db.ObjectId
+//   mechanic     MechanicRegistration @relation(fields: [mechanicId], references: [id])
+//   serviceType  String
+//   servicePrice Float
+//   date         DateTime             @default(now())
+//   time         String
+//   status       String               @default("Pending")
+//   createdAt    DateTime             @default(now())
+//   updatedAt    DateTime             @updatedAt
+
+//   @@map("invoices")
+// }
+
+// // model Availability {
+// //   id         String   @id @default(auto()) @map("_id") @db.ObjectId
+// //   day        String
+// //   isClosed   Boolean  @default(false)
+// //   openTime   String?
+// //   closeTime  String?
+// //   createdAt  DateTime @default(now())
+// //   updatedAt  DateTime @updatedAt
+
+// //   companyId  String   @db.ObjectId
+// //   company    Company  @relation(fields: [companyId], references: [id])
+// // }
+// generator client {
+//   provider = "prisma-client-js"
+// }
+
+// datasource db {
+//   provider = "mongodb"
+//   url      = env("DATABASE_URL")
+// }
+
+// enum UserRole {
+//   USER
+//   ADMIN
+// }
+
+// enum Status {
+//   PENDING
+//   ACCEPT
+//   REJECTED
+// }
+
+// model User {
+//   id            String                @id @default(auto()) @map("_id") @db.ObjectId
+//   firstName     String
+//   lastName      String
+//   email         String                @unique
+//   password      String
+//   profilePic    String?               @default("")
+//   isActive      Boolean               @default(false)
+//   role          UserRole              @default(USER)
+//   createdAt     DateTime              @default(now())
+//   updatedAt     DateTime              @updatedAt
+//   mechanicId    String?               @db.ObjectId
+//   mechanic      MechanicRegistration? @relation(fields: [mechanicId], references: [id])
+//   invoices      Invoice[]             @relation("UserInvoices")
+//   userEstimates UserEstimate[] // Explicit relation via join table
+//   Estimate      Estimate[]
+
+//   @@map("users")
+// }
+
+// model Photo {
+//   id    String  @id @default(auto()) @map("_id") @db.ObjectId
+//   image String? @default("")
+
+//   @@map("photos")
+// }
+
+// model MechanicRegistration {
+//   id              String       @id @default(auto()) @map("_id") @db.ObjectId
+//   firstName       String
+//   lastName        String
+//   email           String       @unique
+//   password        String
+//   phoneNumber     String
+//   country         String
+//   city            String
+//   zipCode         String
+//   servicesOffered String
+//   createdAt       DateTime     @default(now())
+//   updatedAt       DateTime     @updatedAt
+//   companies       Company[]
+//   workingDays     WorkingDay[]
+//   estimates       Estimate[]
+//   invoices        Invoice[]
+//   User            User[]
+
+//   @@map("mechanics")
+// }
+
+// model Company {
+//   id          String   @id @default(auto()) @map("_id") @db.ObjectId
+//   name        String
+//   address     String
+//   country     String
+//   city        String
+//   phoneNumber String
+//   email       String   @unique
+//   createdAt   DateTime @default(now())
+//   updatedAt   DateTime @updatedAt
+
+//   mechanicId String?               @db.ObjectId
+//   mechanic   MechanicRegistration? @relation(fields: [mechanicId], references: [id])
+//   invoices   Invoice[]
+
+//   @@map("companies")
+// }
+
+// model WorkingDay {
+//   id        String  @id @default(auto()) @map("_id") @db.ObjectId
+//   day       String
+//   isClosed  Boolean
+//   openTime  String?
+//   closeTime String?
+
+//   mechanicId String               @db.ObjectId
+//   mechanic   MechanicRegistration @relation(fields: [mechanicId], references: [id])
+
+//   @@map("working_days")
+// }
+
+// // model Customer {
+// //   id        String   @id @default(auto()) @map("_id") @db.ObjectId
+// //   firstName String
+// //   lastName  String
+// //   phone     String
+// //   email     String   @unique
+// //   createdAt DateTime @default(now())
+// //   updatedAt DateTime @updatedAt
+
+// //   estimates Estimate[]
+// //   invoices  Invoice[]
+
+// //   @@map("customers")
+// // }
+
+// // New join table for User and Estimate many-to-many relationship
+// model UserEstimate {
+//   id         String   @id @default(auto()) @map("_id") @db.ObjectId
+//   userId     String   @db.ObjectId
+//   estimateId String   @db.ObjectId
+//   user       User     @relation(fields: [userId], references: [id])
+//   estimate   Estimate @relation(fields: [estimateId], references: [id])
+//   createdAt  DateTime @default(now())
+
+//   @@map("user_estimates")
+// }
+
+// model Estimate {
+//   id            String               @id @default(auto()) @map("_id") @db.ObjectId
+//   estimateId    String               @unique // e.g., #12345
+//   userId        String               @db.ObjectId
+//   user          User?                @relation(fields: [userId], references: [id])
+//   mechanicId    String               @db.ObjectId
+//   mechanic      MechanicRegistration @relation(fields: [mechanicId], references: [id])
+//   service       String
+//   amount        Float
+//   status        String               @default("Pending")
+//   date          DateTime
+//   createdAt     DateTime             @default(now())
+//   updatedAt     DateTime             @updatedAt
+//   invoices      Invoice[]
+//   userEstimates UserEstimate[] // Explicit relation via join table
+
+//   @@map("estimates")
+// }
+
+// model Invoice {
+//   id           String               @id @default(auto()) @map("_id") @db.ObjectId
+//   estimateId   String               @db.ObjectId
+//   estimate     Estimate             @relation(fields: [estimateId], references: [id])
+//   userId       String               @db.ObjectId
+//   user         User                 @relation(fields: [userId], references: [id], name: "UserInvoices")
+//   companyId    String               @db.ObjectId
+//   company      Company              @relation(fields: [companyId], references: [id])
+//   mechanicId   String               @db.ObjectId
+//   mechanic     MechanicRegistration @relation(fields: [mechanicId], references: [id])
+//   serviceType  String
+//   servicePrice Float
+//   date         DateTime             @default(now())
+//   time         String
+//   status       Status               @default(PENDING)
+//   createdAt    DateTime             @default(now())
+//   updatedAt    DateTime             @updatedAt
+
+//   @@map("invoices")
+// }
 generator client {
   provider = "prisma-client-js"
 }
@@ -7,16 +313,35 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+enum UserRole {
+  USER
+  ADMIN
+}
+
+enum Status {
+  PENDING
+  ACCEPT
+  REJECTED
+}
+
 model User {
-  id         String   @id @default(auto()) @map("_id") @db.ObjectId
-  fullName   String
-  email      String   @unique
-  password   String
-  profilePic String?  @default("")
-  isActive   Boolean  @default(false)
-  role       UserRole @default(USER)
-  createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  id            String                @id @default(auto()) @map("_id") @db.ObjectId
+  firstName     String
+  lastName      String
+  email         String                @unique
+  password      String
+  profilePic    String?               @default("")
+  isActive      Boolean               @default(false)
+  role          UserRole              @default(USER)
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  mechanicId    String?               @db.ObjectId
+  mechanic      MechanicRegistration? @relation(fields: [mechanicId], references: [id])
+  invoices      Invoice[]             @relation("UserInvoices")
+  userEstimates UserEstimate[]
+  estimates     Estimate[]
+  feedbacks     Feedback[]
+  bookings      Booking[]
 
   @@map("users")
 }
@@ -28,7 +353,160 @@ model Photo {
   @@map("photos")
 }
 
-enum UserRole {
-  USER
-  ADMIN
+model MechanicRegistration {
+  id              String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName       String
+  lastName        String
+  email           String   @unique
+  password        String
+  phoneNumber     String
+  country         String
+  city            String
+  zipCode         String
+  servicesOffered String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  companies      Company[]
+  workingDays    WorkingDay[]
+  estimates      Estimate[]
+  invoices       Invoice[]
+  feedbacks      Feedback[]
+  bookings       Booking[]
+  users          User[]
+  ServicePricing ServicePricing[]
+
+  @@map("mechanics")
+}
+
+model Company {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  name        String
+  address     String
+  country     String
+  city        String
+  phoneNumber String
+  email       String   @unique
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  mechanicId String?               @db.ObjectId
+  mechanic   MechanicRegistration? @relation(fields: [mechanicId], references: [id])
+  invoices   Invoice[]
+  bookings   Booking[]
+
+  @@map("companies")
+}
+
+model WorkingDay {
+  id        String  @id @default(auto()) @map("_id") @db.ObjectId
+  day       String
+  isClosed  Boolean
+  openTime  String?
+  closeTime String?
+
+  mechanicId String               @db.ObjectId
+  mechanic   MechanicRegistration @relation(fields: [mechanicId], references: [id])
+
+  @@map("working_days")
+}
+
+model UserEstimate {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId     String   @db.ObjectId
+  estimateId String   @db.ObjectId
+  user       User     @relation(fields: [userId], references: [id])
+  estimate   Estimate @relation(fields: [estimateId], references: [id])
+  createdAt  DateTime @default(now())
+
+  @@map("user_estimates")
+}
+
+model Estimate {
+  id            String               @id @default(auto()) @map("_id") @db.ObjectId
+  estimateId    String               @unique // e.g., #12345
+  userId        String               @db.ObjectId
+  user          User                 @relation(fields: [userId], references: [id])
+  mechanicId    String               @db.ObjectId
+  mechanic      MechanicRegistration @relation(fields: [mechanicId], references: [id])
+  service       String
+  amount        Float
+  status        Status               @default(PENDING)
+  date          DateTime
+  createdAt     DateTime             @default(now())
+  updatedAt     DateTime             @updatedAt
+  invoices      Invoice[]
+  userEstimates UserEstimate[]
+
+  @@map("estimates")
+}
+
+model Invoice {
+  id           String               @id @default(auto()) @map("_id") @db.ObjectId
+  estimateId   String               @db.ObjectId
+  estimate     Estimate             @relation(fields: [estimateId], references: [id])
+  userId       String               @db.ObjectId
+  user         User                 @relation(fields: [userId], references: [id], name: "UserInvoices")
+  companyId    String               @db.ObjectId
+  company      Company              @relation(fields: [companyId], references: [id])
+  mechanicId   String               @db.ObjectId
+  mechanic     MechanicRegistration @relation(fields: [mechanicId], references: [id])
+  serviceType  String
+  servicePrice Float
+  date         DateTime             @default(now())
+  time         String
+  status       Status               @default(PENDING)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@map("invoices")
+}
+
+model Feedback {
+  id              String               @id @default(auto()) @map("_id") @db.ObjectId
+  userId          String               @db.ObjectId
+  user            User                 @relation(fields: [userId], references: [id])
+  mechanicId      String               @db.ObjectId
+  mechanic        MechanicRegistration @relation(fields: [mechanicId], references: [id])
+  reliability     Int                  @default(0) // 0-5 rating
+  trustworthiness Int                  @default(0) // 0-5 rating
+  honesty         Int                  @default(0) // 0-5 rating
+  message         String?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+
+  @@map("feedbacks")
+}
+
+model Booking {
+  id          String               @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String               @db.ObjectId
+  user        User                 @relation(fields: [userId], references: [id])
+  mechanicId  String               @db.ObjectId
+  mechanic    MechanicRegistration @relation(fields: [mechanicId], references: [id])
+  companyId   String               @db.ObjectId
+  company     Company              @relation(fields: [companyId], references: [id])
+  service     String
+  amount      Float
+  date        DateTime
+  location    String
+  countryCode String
+  phoneNumber String
+  status      Status               @default(PENDING)
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@map("bookings")
+}
+
+model ServicePricing {
+  id           String               @id @default(auto()) @map("_id") @db.ObjectId
+  mechanicId   String               @db.ObjectId
+  mechanic     MechanicRegistration @relation(fields: [mechanicId], references: [id])
+  serviceName  String
+  servicePrice Float                @default(0.00)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  @@map("service_pricings")
 }

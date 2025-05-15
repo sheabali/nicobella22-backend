@@ -19,22 +19,25 @@ const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const createUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_service_1.UserService.createUserIntoDB(req.body);
-    res.cookie("accessToken", result.accessToken, {
+    res.cookie('accessToken', result.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === 'production',
         sameSite: true,
         maxAge: 24 * 60 * 60 * 1000,
     });
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.CREATED,
-        message: "Please check your email to active your account!",
+        success: true,
+        message: 'Please check your email to active your account!',
+        data: null,
     });
 }));
 const getAllUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield user_service_1.UserService.getAllUserFromDB();
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
-        message: "Users are retrieved successfully!",
+        success: true,
+        message: 'Users are retrieved successfully!',
         data: result,
     });
 }));
@@ -46,7 +49,8 @@ const updateUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
     const result = yield user_service_1.UserService.updateUserIntoDB(userId, req.body);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
-        message: "User updated successfully!",
+        message: 'User updated successfully!',
+        success: true,
         data: result,
     });
 }));
@@ -55,7 +59,9 @@ const deleteUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
     yield user_service_1.UserService.deleteUserFromDB(userId);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
-        message: "User deleted successfully!",
+        success: true,
+        message: 'User deleted successfully!',
+        data: null,
     });
 }));
 exports.UserController = {

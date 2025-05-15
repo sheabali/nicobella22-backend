@@ -1,12 +1,12 @@
-import status from "http-status";
-import ApiError from "../../errors/ApiError";
-import prisma from "../../utils/prisma";
-import { verifyToken } from "../../utils/verifyToken";
-import { passwordCompare } from "../../utils/comparePasswords";
-import { createToken } from "./auth.utils";
-import config from "../../config";
-import { hashPassword } from "../user/user.utils";
-import { sendEmail } from "../../utils/sendEmail";
+import status from 'http-status';
+import ApiError from '../../errors/ApiError';
+import prisma from '../../utils/prisma';
+import { verifyToken } from '../../utils/verifyToken';
+import { passwordCompare } from '../../utils/comparePasswords';
+import { createToken } from './auth.utils';
+import config from '../../config';
+import { hashPassword } from '../user/user.utils';
+import { sendEmail } from '../../utils/sendEmail';
 
 const activeAccount = async (token: string) => {
   const decodedToken = verifyToken(token);
@@ -16,11 +16,11 @@ const activeAccount = async (token: string) => {
   });
 
   if (!user) {
-    throw new ApiError(status.NOT_FOUND, "User not found!");
+    throw new ApiError(status.NOT_FOUND, 'User not found!');
   }
 
   if (user.isActive) {
-    throw new ApiError(status.BAD_REQUEST, "User already active!");
+    throw new ApiError(status.BAD_REQUEST, 'User already active!');
   }
 
   await prisma.user.update({
@@ -37,21 +37,22 @@ const loginUser = async (email: string, password: string) => {
   });
 
   if (!user) {
-    throw new ApiError(status.NOT_FOUND, "User not found!");
+    throw new ApiError(status.NOT_FOUND, 'User not found!');
   }
 
   if (!user.isActive) {
-    throw new ApiError(status.UNAUTHORIZED, "User is not active!");
+    throw new ApiError(status.UNAUTHORIZED, 'User is not active!');
   }
 
   const isPasswordMatched = await passwordCompare(password, user.password);
 
   if (!isPasswordMatched) {
-    throw new ApiError(status.UNAUTHORIZED, "Password is incorrect!");
+    throw new ApiError(status.UNAUTHORIZED, 'Password is incorrect!');
   }
 
   const jwtPayload = {
-    fullName: user.fullName,
+    firstName: user.firstName,
+    lastName: user.lastName,
     email: user.email,
     profilePic: user.profilePic,
     role: user.role,
@@ -79,13 +80,13 @@ const changePassword = async (
   });
 
   if (!user) {
-    throw new ApiError(status.NOT_FOUND, "User not found!");
+    throw new ApiError(status.NOT_FOUND, 'User not found!');
   }
 
   const isPasswordMatch = await passwordCompare(currentPassword, user.password);
 
   if (!isPasswordMatch) {
-    throw new ApiError(status.UNAUTHORIZED, "Current password is incorrect!");
+    throw new ApiError(status.UNAUTHORIZED, 'Current password is incorrect!');
   }
 
   const hashedNewPassword = await hashPassword(newPassword);
@@ -102,15 +103,16 @@ const forgotPassword = async (email: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
 
   if (!user) {
-    throw new ApiError(status.NOT_FOUND, "User not found!");
+    throw new ApiError(status.NOT_FOUND, 'User not found!');
   }
 
   if (!user.isActive) {
-    throw new ApiError(status.UNAUTHORIZED, "User account is not active!");
+    throw new ApiError(status.UNAUTHORIZED, 'User account is not active!');
   }
 
   const jwtPayload = {
-    fullName: user.fullName,
+    firstName: user.firstName,
+    lastName: user.lastName,
     email: user.email,
     profilePic: user.profilePic,
     role: user.role,
@@ -128,7 +130,7 @@ const forgotPassword = async (email: string) => {
   await sendEmail(user.email, resetLink);
 
   return {
-    message: "Password reset link sent to your email.",
+    message: 'Password reset link sent to your email.',
   };
 };
 
@@ -138,7 +140,7 @@ const resetPassword = async (
   confirmPassword: string
 ) => {
   if (newPassword !== confirmPassword) {
-    throw new ApiError(status.BAD_REQUEST, "Passwords do not match!");
+    throw new ApiError(status.BAD_REQUEST, 'Passwords do not match!');
   }
 
   const decoded = verifyToken(token, config.jwtAccessSecret as string);
@@ -148,7 +150,7 @@ const resetPassword = async (
   });
 
   if (!user) {
-    throw new ApiError(status.NOT_FOUND, "User not found!");
+    throw new ApiError(status.NOT_FOUND, 'User not found!');
   }
 
   const hashedPassword = await hashPassword(newPassword);
@@ -159,7 +161,7 @@ const resetPassword = async (
   });
 
   return {
-    message: "Password reset successfully!",
+    message: 'Password reset successfully!',
   };
 };
 

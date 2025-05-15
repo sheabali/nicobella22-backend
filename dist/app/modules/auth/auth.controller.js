@@ -17,27 +17,32 @@ const http_status_1 = __importDefault(require("http-status"));
 const catchAsync_1 = __importDefault(require("../../utils/catchAsync"));
 const sendResponse_1 = __importDefault(require("../../utils/sendResponse"));
 const auth_service_1 = require("./auth.service");
+const http_status_codes_1 = require("http-status-codes");
 const activeAccount = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { token } = req.params;
-    yield auth_service_1.AuthService.activeAccount(token);
-    res.redirect("/verified-success");
+    console.log(token);
+    const result = yield auth_service_1.AuthService.activeAccount(token);
+    res.redirect('/verified-success');
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
-        message: "User account activated successfully!",
+        success: true,
+        message: 'User account activated successfully!',
+        data: result,
     });
 }));
 const login = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, password } = req.body;
     const result = yield auth_service_1.AuthService.loginUser(email, password);
-    res.cookie("accessToken", result.accessToken, {
+    res.cookie('accessToken', result.accessToken, {
         httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
+        secure: process.env.NODE_ENV === 'production',
         sameSite: true,
         maxAge: 24 * 60 * 60 * 1000,
     });
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
-        message: "User logged in successfully!",
+        message: 'User logged in successfully!',
+        success: true,
         data: result,
     });
 }));
@@ -46,8 +51,10 @@ const changePassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     const { currentPassword, newPassword } = req.body;
     yield auth_service_1.AuthService.changePassword(userId, currentPassword, newPassword);
     (0, sendResponse_1.default)(res, {
-        statusCode: http_status_1.default.OK,
-        message: "User password changed successfully!",
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: 'User password changed successfully!',
+        success: true,
+        data: null,
     });
 }));
 const forgotPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -56,6 +63,8 @@ const forgotPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         message: result.message,
+        success: true,
+        data: result,
     });
 }));
 const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -65,6 +74,8 @@ const resetPassword = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, 
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_1.default.OK,
         message: result.message,
+        success: true,
+        data: result,
     });
 }));
 exports.AuthController = {
