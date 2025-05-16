@@ -1,20 +1,20 @@
-import { NextFunction, Request, Response } from 'express';
-import jwt, { JwtPayload, TokenExpiredError } from 'jsonwebtoken';
-import config from '../config';
+import { NextFunction, Request, Response } from "express";
+import jwt, { JwtPayload, TokenExpiredError } from "jsonwebtoken";
+import config from "../config";
 
-import catchAsync from '../utils/catchAsync';
-import { StatusCodes } from 'http-status-codes';
+import { StatusCodes } from "http-status-codes";
+import catchAsync from "../utils/catchAsync";
 
-import ApiError from '../errors/ApiError';
-import { UserRole } from '../types/user.type';
-import prisma from '../utils/prisma';
+import ApiError from "../errors/ApiError";
+import { UserRole } from "../types/user.type";
+import prisma from "../utils/prisma";
 
 const auth = (...requiredRoles: UserRole[]) => {
   return catchAsync(async (req: Request, res: Response, next: NextFunction) => {
     const token = req.headers.authorization;
 
     if (!token) {
-      throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized!');
+      throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
     }
 
     try {
@@ -24,18 +24,18 @@ const auth = (...requiredRoles: UserRole[]) => {
         config.jwtAccessSecret as string
       ) as JwtPayload;
 
-      const { role, email } = decoded;
+      const { role, email, id } = decoded;
 
       const user = await prisma.user.findMany({
-        where: { email, role, isActive: true },
+        where: { id, email, role, isActive: true },
       });
 
       if (!user) {
-        throw new ApiError(StatusCodes.NOT_FOUND, 'This user is not found!');
+        throw new ApiError(StatusCodes.NOT_FOUND, "This user is not found!");
       }
 
       if (requiredRoles && !requiredRoles.includes(role)) {
-        throw new ApiError(StatusCodes.UNAUTHORIZED, 'You are not authorized!');
+        throw new ApiError(StatusCodes.UNAUTHORIZED, "You are not authorized!");
       }
 
       req.user = decoded as JwtPayload & { role: string };
@@ -45,11 +45,11 @@ const auth = (...requiredRoles: UserRole[]) => {
         return next(
           new ApiError(
             StatusCodes.UNAUTHORIZED,
-            'Token has expired! Please login again.'
+            "Token has expired! Please login again."
           )
         );
       }
-      return next(new ApiError(StatusCodes.UNAUTHORIZED, 'Invalid token!'));
+      return next(new ApiError(StatusCodes.UNAUTHORIZED, "Invalid token!"));
     }
   });
 };

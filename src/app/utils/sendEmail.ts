@@ -1,5 +1,5 @@
-import nodemailer from "nodemailer";
-import config from "../config";
+import nodemailer from 'nodemailer';
+import config from '../config';
 
 export const sendEmail = async (
   to: string,
@@ -7,18 +7,18 @@ export const sendEmail = async (
   confirmLink?: string
 ) => {
   const transporter = nodemailer.createTransport({
-    host: "smtp.gmail.com",
+    host: 'smtp.gmail.com',
     port: 587,
-    secure: config.NODE_ENV === "production",
+    secure: config.NODE_ENV === 'production',
     auth: {
       user: config.emailSender.email,
       pass: config.emailSender.app_pass,
     },
   });
 
-  const formattedDate = new Intl.DateTimeFormat("en-US", {
-    dateStyle: "medium",
-    timeStyle: "short",
+  const formattedDate = new Intl.DateTimeFormat('en-US', {
+    dateStyle: 'medium',
+    timeStyle: 'short',
   }).format(new Date());
 
   const clickableLink = `<a href="${confirmLink}" style="color: #121849; text-decoration: underline;">here</a>`;
@@ -58,8 +58,8 @@ export const sendEmail = async (
   await transporter.sendMail({
     from: `"Sk Shariful Islam" <${config.emailSender.email}>`,
     to,
-    subject: `${resetPassLink ? "Reset Your Password" : "Active Your Account"}`,
-    text: "Hello world?",
+    subject: `${resetPassLink ? 'Reset Your Password' : 'Active Your Account'}`,
+    text: 'Hello world?',
     html: html,
   });
 };

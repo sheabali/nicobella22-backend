@@ -1,31 +1,36 @@
-import { Router } from 'express';
-import { UserRoutes } from '../modules/user/user.routes';
-import { AuthRoutes } from '../modules/auth/auth.route';
-import { MechanicRoutes } from '../modules/mechanic/mechanic.routes';
-import { CompanyRoutes } from '../modules/company/company.routes';
-import { BookingRoutes } from '../modules/booking/booking.routes';
+import { Router } from "express";
+import { AuthRoutes } from "../modules/auth/auth.route";
+import { BookingRoutes } from "../modules/booking/booking.routes";
+import { CompanyRoutes } from "../modules/company/company.routes";
+import { MechanicRoutes } from "../modules/mechanic/mechanic.routes";
+import { UserRoutes } from "../modules/user/user.routes";
+import { VehicleRoutes } from "../modules/vehicle/vehicle.routes";
 const router = Router();
 
 const moduleRoutes = [
   {
-    path: '/auth',
+    path: "/auth",
     route: AuthRoutes,
   },
   {
-    path: '/users',
+    path: "/users",
     route: UserRoutes,
   },
   {
-    path: '/mechanic',
+    path: "/mechanic",
     route: MechanicRoutes,
   },
   {
-    path: '/company',
+    path: "/company",
     route: CompanyRoutes,
   },
   {
-    path: '/booking',
+    path: "/booking",
     route: BookingRoutes,
+  },
+  {
+    path: "/vehicle",
+    route: VehicleRoutes,
   },
 ];
 

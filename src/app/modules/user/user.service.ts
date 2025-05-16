@@ -1,13 +1,11 @@
-import { User, UserRole } from '@prisma/client';
-import status from 'http-status';
-import config from '../../config';
-import prisma from '../../utils/prisma';
-import { createToken } from '../auth/auth.utils';
-import { hashPassword } from './user.utils';
-import ApiError from '../../errors/ApiError';
-import { sendEmail } from '../../utils/sendEmail';
-import { verifyToken } from '../../utils/verifyToken';
-import { date } from 'zod';
+import { User, UserRole } from "@prisma/client";
+import status from "http-status";
+import config from "../../config";
+import ApiError from "../../errors/ApiError";
+import prisma from "../../utils/prisma";
+import { verifyToken } from "../../utils/verifyToken";
+import { createToken } from "../auth/auth.utils";
+import { hashPassword } from "./user.utils";
 
 const createUserIntoDB = async (payload: User) => {
   const isUserExist = await prisma.user.findUnique({
@@ -15,7 +13,7 @@ const createUserIntoDB = async (payload: User) => {
   });
 
   if (isUserExist) {
-    throw new ApiError(status.BAD_REQUEST, 'User already exists');
+    throw new ApiError(status.BAD_REQUEST, "User already exists");
   }
 
   const hashedPassword = await hashPassword(payload.password);
@@ -69,7 +67,7 @@ const getAllUserFromDB = async () => {
   });
 
   if (!result) {
-    throw new ApiError(status.NOT_FOUND, 'Users not found!');
+    throw new ApiError(status.NOT_FOUND, "Users not found!");
   }
 
   return result;
@@ -83,11 +81,11 @@ const activeAccount = async (token: string) => {
   });
 
   if (!user) {
-    throw new ApiError(status.NOT_FOUND, 'User not found!');
+    throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
   if (user.isActive) {
-    throw new ApiError(status.BAD_REQUEST, 'User already active!');
+    throw new ApiError(status.BAD_REQUEST, "User already active!");
   }
 
   await prisma.user.update({
@@ -106,7 +104,7 @@ const updateUserIntoDB = async (userId: string, payload: Partial<User>) => {
   });
 
   if (!isUserExist) {
-    throw new ApiError(status.NOT_FOUND, 'User not found!');
+    throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
   if (!payload.profilePic) {
@@ -138,7 +136,7 @@ const deleteUserFromDB = async (userId: string) => {
   });
 
   if (!isUserExist) {
-    throw new ApiError(status.NOT_FOUND, 'User not found!');
+    throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
   await prisma.user.delete({

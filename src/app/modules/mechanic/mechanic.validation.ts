@@ -1,44 +1,64 @@
 import { z } from 'zod';
 
+// Validation schema for MechanicRegistration (already exists)
 export const mechanicRegistrationSchema = z.object({
   body: z.object({
-    firstName: z.string().min(1, 'First name is required'),
-    lastName: z.string().min(1, 'Last name is required'),
-    email: z.string().email('Invalid email address'),
-    password: z.string().min(6, 'Password must be at least 6 characters long'),
-    phoneNumber: z
-      .string()
-      .min(6, 'Phone number is required')
-      .regex(/^\+?[0-9]{6,15}$/, 'Invalid phone number'),
-    country: z.string().min(1, 'Country is required'),
-    city: z.string().min(1, 'City is required'),
-    zipCode: z
-      .string()
-      .min(1, 'Zip code is required')
-      .regex(/^[A-Za-z0-9\s\-]{3,10}$/, 'Invalid zip code'),
-    servicesOffered: z.union([
-      z.string().min(1, 'Services offered is required'),
-      z
-        .array(z.string().min(1))
-        .nonempty('At least one service must be offered'),
-    ]),
+    firstName: z.string({ required_error: 'First name is required' }),
+    lastName: z.string({ required_error: 'Last name is required' }),
+    email: z
+      .string({ required_error: 'Email is required' })
+      .email('Invalid email format'),
+    password: z
+      .string({ required_error: 'Password is required' })
+      .min(6, 'Password must be at least 6 characters'),
+    phoneNumber: z.string({ required_error: 'Phone number is required' }),
+    country: z.string({ required_error: 'Country is required' }),
+    city: z.string({ required_error: 'City is required' }),
+    zipCode: z.string({ required_error: 'Zip code is required' }),
+    servicesOffered: z.string().optional(),
   }),
 });
 
-export const workingDayValidationSchema = z.object({
+// Validation schema for a single WorkingDay (already exists, but renamed for clarity)
+export const singleWorkingDayValidationSchema = z.object({
+  day: z.string({ required_error: 'Day is required' }),
+  isClosed: z.boolean({ required_error: 'isClosed is required' }),
+  openTime: z.string().nullable().optional(),
+  closeTime: z.string().nullable().optional(),
+  mechanicId: z.string({ required_error: 'Mechanic ID is required' }),
+});
+
+// Validation schema for an array of WorkingDays
+// export const workingDaysValidationSchema = z.object({
+//   body: z.object({
+//     workingDays: z.array(singleWorkingDayValidationSchema, {
+//       required_error: 'Working days array is required',
+//     }),
+//   }),
+// });
+
+// Validation schema for Company
+export const companyValidationSchema = z.object({
   body: z.object({
-    day: z.string({
-      required_error: 'Day is required',
-    }),
-    isClosed: z.boolean({
-      required_error: 'isClosed is required',
-    }),
-    openTime: z.string().optional().nullable(),
-    closeTime: z.string().optional().nullable(),
-    mechanicId: z
-      .string({
-        required_error: 'Mechanic ID is required',
-      })
-      .min(1, 'Mechanic ID cannot be empty'),
+    mechanicId: z.string({ required_error: 'Mechanic ID is required' }),
+    name: z.string({ required_error: 'Company name is required' }),
+    address: z.string({ required_error: 'Address is required' }),
+    country: z.string({ required_error: 'Country is required' }),
+    city: z.string({ required_error: 'City is required' }),
+    phoneNumber: z.string({ required_error: 'Phone number is required' }),
+    email: z
+      .string({ required_error: 'Email is required' })
+      .email('Invalid email format'),
+  }),
+});
+
+// Validation schema for ServicePricing
+export const servicePricingValidationSchema = z.object({
+  body: z.object({
+    mechanicId: z.string({ required_error: 'Mechanic ID is required' }),
+    service: z.string({ required_error: 'Service is required' }),
+    amount: z
+      .number({ required_error: 'Amount is required' })
+      .positive('Amount must be positive'),
   }),
 });

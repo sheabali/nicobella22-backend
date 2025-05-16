@@ -1,17 +1,14 @@
-import prisma from '../../utils/prisma';
-import { Booking } from '@prisma/client';
-import ApiError from '../../errors/ApiError';
-import { Prisma } from '@prisma/client';
-import { ObjectId } from 'mongodb';
+import { Booking, Prisma } from "@prisma/client";
+import { ObjectId } from "mongodb";
+import ApiError from "../../errors/ApiError";
+import prisma from "../../utils/prisma";
 
-import { z } from 'zod';
-import { IJwtPayload } from '../../types/auth.type';
-import QueryBuilder from '../../builder/QueryBuilder';
-import { UserRole } from '../../types/user.type';
-import { StatusCodes } from 'http-status-codes';
+import { StatusCodes } from "http-status-codes";
+import { z } from "zod";
+import { UserRole } from "../../types/user.type";
 
 const bookingService = async (
-  payload: Omit<Booking, 'id' | 'createdAt' | 'updatedAt'>
+  payload: Omit<Booking, "id" | "createdAt" | "updatedAt">
 ) => {
   try {
     const {
@@ -26,53 +23,53 @@ const bookingService = async (
       phoneNumber,
     } = payload;
 
-    console.log('booking payload', payload);
+    console.log("booking payload", payload);
 
     // Validate userId
     if (!ObjectId.isValid(userId)) {
       throw new ApiError(
         400,
-        'Invalid user ID format. Must be a 24-character hexadecimal string.'
+        "Invalid user ID format. Must be a 24-character hexadecimal string."
       );
     }
     const user = await prisma.user.findUnique({
       where: { id: userId },
     });
     if (!user) {
-      throw new ApiError(400, 'User ID does not exist');
+      throw new ApiError(400, "User ID does not exist");
     }
 
     // Validate mechanicId
     if (!ObjectId.isValid(mechanicId)) {
       throw new ApiError(
         400,
-        'Invalid mechanic ID format. Must be a 24-character hexadecimal string.'
+        "Invalid mechanic ID format. Must be a 24-character hexadecimal string."
       );
     }
     const mechanic = await prisma.mechanicRegistration.findUnique({
       where: { id: mechanicId },
     });
     if (!mechanic) {
-      throw new ApiError(400, 'Mechanic ID does not exist');
+      throw new ApiError(400, "Mechanic ID does not exist");
     }
 
     // Validate companyId
     if (!ObjectId.isValid(companyId)) {
       throw new ApiError(
         400,
-        'Invalid company ID format. Must be a 24-character hexadecimal string.'
+        "Invalid company ID format. Must be a 24-character hexadecimal string."
       );
     }
     const company = await prisma.company.findUnique({
       where: { id: companyId },
     });
     if (!company) {
-      throw new ApiError(400, 'Company ID does not exist');
+      throw new ApiError(400, "Company ID does not exist");
     }
 
     // Additional validation for phoneNumber format (optional)
     if (!/^\+?[1-9]\d{1,14}$/.test(phoneNumber)) {
-      throw new ApiError(400, 'Invalid phone number format');
+      throw new ApiError(400, "Invalid phone number format");
     }
 
     // Create new booking
@@ -87,7 +84,7 @@ const bookingService = async (
         location,
         countryCode,
         phoneNumber,
-        status: 'PENDING',
+        status: "PENDING",
       },
     });
 
@@ -96,26 +93,26 @@ const bookingService = async (
     if (error instanceof z.ZodError) {
       throw new ApiError(
         400,
-        'Validation failed',
-        error.errors.map((e) => e.message).join(', ')
+        "Validation failed",
+        error.errors.map((e) => e.message).join(", ")
       );
     }
     if (error instanceof ApiError) {
       throw error;
     }
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2003') {
+      if (error.code === "P2003") {
         throw new ApiError(
           400,
-          'Invalid reference ID (user, mechanic, or company)'
+          "Invalid reference ID (user, mechanic, or company)"
         );
       }
-      if (error.code === 'P2023') {
-        throw new ApiError(400, 'Invalid ID format: Malformed ObjectID');
+      if (error.code === "P2023") {
+        throw new ApiError(400, "Invalid ID format: Malformed ObjectID");
       }
     }
-    console.error('Error creating booking:', error);
-    throw new ApiError(500, 'Failed to create booking', error.message);
+    console.error("Error creating booking:", error);
+    throw new ApiError(500, "Failed to create booking", error.message);
   }
 };
 
@@ -123,22 +120,22 @@ const getAllBooking = async (
   query: Record<string, unknown>,
   authUser: { userId: string; role: string; mechanicId?: string; email: string }
 ) => {
-  console.log('authUser', authUser.email);
+  console.log("authUser", authUser.email);
 
   try {
     // Validate email
-    if (!authUser.email || typeof authUser.email !== 'string') {
-      throw new ApiError(StatusCodes.BAD_REQUEST, 'Invalid or missing email');
+    if (!authUser.email || typeof authUser.email !== "string") {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid or missing email");
     }
 
     // Find the user by email
     const user = await prisma.user.findUnique({
       where: { email: authUser.email },
     });
-    console.log('user', user?.id);
+    console.log("user", user?.id);
 
     if (!user) {
-      throw new ApiError(StatusCodes.NOT_FOUND, 'User not found');
+      throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
     }
 
     // Validate role
@@ -146,7 +143,7 @@ const getAllBooking = async (
     if (!validRoles.includes(authUser.role as UserRole)) {
       throw new ApiError(
         StatusCodes.FORBIDDEN,
-        'Invalid role for accessing bookings'
+        "Invalid role for accessing bookings"
       );
     }
 
@@ -161,7 +158,7 @@ const getAllBooking = async (
       if (!authUser.mechanicId) {
         throw new ApiError(
           StatusCodes.BAD_REQUEST,
-          'Mechanic ID is required for mechanic role'
+          "Mechanic ID is required for mechanic role"
         );
       }
       whereClause.mechanicId = authUser.mechanicId;
@@ -185,18 +182,18 @@ const getAllBooking = async (
     }
 
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === 'P2023') {
+      if (error.code === "P2023") {
         throw new ApiError(
           StatusCodes.BAD_REQUEST,
-          'Invalid ID format: Malformed ObjectID'
+          "Invalid ID format: Malformed ObjectID"
         );
       }
     }
 
-    console.error('Error retrieving bookings:', error);
+    console.error("Error retrieving bookings:", error);
     throw new ApiError(
       StatusCodes.INTERNAL_SERVER_ERROR,
-      'Failed to retrieve bookings',
+      "Failed to retrieve bookings",
       error.message
     );
   }

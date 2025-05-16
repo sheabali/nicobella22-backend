@@ -1,28 +1,45 @@
 import { Router } from 'express';
-
 import validateRequest from '../../middlewares/validateRequest';
 import {
   mechanicRegistrationSchema,
-  workingDayValidationSchema,
+  // workingDaysValidationSchema,
+  companyValidationSchema,
+  servicePricingValidationSchema,
 } from './mechanic.validation';
-import { AuthController } from '../auth/auth.controller';
 import { MechanicController } from './mechanic.controller';
-import { CompanyController } from '../company/company.controller';
 import { UserValidation } from '../user/user.validation';
 
 const router = Router();
 
+// Step 1: Mechanic Registration (Personal Information)
 router.post(
   '/',
   validateRequest(mechanicRegistrationSchema),
   MechanicController.mechanicRegistration
 );
 
+// Step 2: Add Company Information
 router.post(
-  '/working-day',
-  validateRequest(workingDayValidationSchema),
-  MechanicController.createWorkingDay
+  '/company',
+  validateRequest(companyValidationSchema),
+  MechanicController.addCompany
 );
+
+// Step 3: Add Working Days (Handle multiple days)
+router.post(
+  '/working-days',
+  // validateRequest(workingDaysValidationSchema),
+  MechanicController.createWorkingDays
+);
+
+// Step 4: Add Service Pricing
+// router.post(
+//   '/service-pricing',
+//   validateRequest(servicePricingValidationSchema),
+//   MechanicController.addServicePricing
+// );
+
+// Step 5: Sign-Up Completion
 router.post(
   '/sign-up-complete',
   validateRequest(UserValidation.createUserValidationSchema),

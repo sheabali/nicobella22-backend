@@ -1,4 +1,4 @@
-import { UserRole } from './user.type';
+import { UserRole } from "./user.type";
 
 export interface IJwtPayload {
   userId: string;

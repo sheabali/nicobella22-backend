@@ -1,4 +1,4 @@
-import jwt, { JwtPayload } from 'jsonwebtoken';
+import jwt, { JwtPayload } from "jsonwebtoken";
 
 type IJwtPayload = {
   id?: string;
@@ -6,7 +6,7 @@ type IJwtPayload = {
   lastName: string;
   email: string;
   profilePic?: string | null;
-  role: 'USER' | 'ADMIN';
+  role: "USER" | "ADMIN" | "MECHANIC";
   isActive: boolean;
 };
 
