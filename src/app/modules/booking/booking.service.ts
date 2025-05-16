@@ -118,7 +118,7 @@ const bookingService = async (
 
 const getAllBooking = async (
   query: Record<string, unknown>,
-  authUser: { userId: string; role: string; mechanicId?: string; email: string }
+  authUser: { id: string; role: string; mechanicId?: string; email: string }
 ) => {
   console.log("authUser", authUser.email);
 
