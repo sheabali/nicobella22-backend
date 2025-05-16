@@ -21,7 +21,10 @@ const createVehicle = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getAllVehicle = catchAsync(async (req: Request, res: Response) => {
-  const result = await VehicleService.getAllVehicle(req.user as IJwtPayload);
+  const result = await VehicleService.getAllVehicle(
+    req.user as IJwtPayload,
+    req.query
+  );
   console.log(req.user);
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
@@ -30,8 +33,38 @@ const getAllVehicle = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getSingleVehicle = catchAsync(async (req: Request, res: Response) => {
+  const { vehicleId } = req.params;
+  const authUser = req.user as { userId: string; role: string }; // typed user if available
+
+  const result = await VehicleService.getSingleVehicle(vehicleId, authUser);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Vehicle retrieved successfully",
+    success: true,
+    data: result,
+  });
+});
+const deleteVehicleController = catchAsync(
+  async (req: Request, res: Response) => {
+    const { vehicleId } = req.params;
+    const authUser = req.user as { userId: string; role: string };
+
+    const result = await VehicleService.deleteVehicle(vehicleId, authUser);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      message: "Vehicle deleted successfully",
+      success: true,
+      data: result,
+    });
+  }
+);
 
 export const VehicleController = {
   createVehicle,
   getAllVehicle,
+  getSingleVehicle,
+  deleteVehicleController,
 };

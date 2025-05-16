@@ -17,5 +17,15 @@ router.get(
   auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
   VehicleController.getAllVehicle
 );
+router.get(
+  "/:vehicleId",
+  auth(UserRole.USER),
+  VehicleController.getSingleVehicle
+);
+router.delete(
+  "/:vehicleId",
+  auth(UserRole.USER),
+  VehicleController.deleteVehicleController
+);
 
 export const VehicleRoutes = router;
