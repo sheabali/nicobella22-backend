@@ -100,11 +100,6 @@ const deleteVehicle = async (
     throw new ApiError(404, "Vehicle not found");
   }
 
-  // Optional: Only allow the owner or admin to delete
-  if (authUser.role !== "user" && existingVehicle.userId !== authUser.userId) {
-    throw new ApiError(403, "You are not authorized to delete this vehicle");
-  }
-
   // Perform the deletion
   await prisma.vehicle.delete({
     where: { id: vehicleId },
