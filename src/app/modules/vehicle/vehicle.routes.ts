@@ -1,6 +1,8 @@
 import { Router } from "express";
 
+import { multerUpload } from "../../config/multer.config";
 import auth from "../../middlewares/auth";
+import { parseBody } from "../../middlewares/bodyParser";
 import { UserRole } from "../../types/user.type";
 import { VehicleController } from "./vehicle.controller";
 
@@ -10,6 +12,8 @@ router.post(
   "/",
   // validateRequest(),
   auth(UserRole.USER),
+  multerUpload.fields([{ name: "images" }]),
+  parseBody,
   VehicleController.createVehicle
 );
 router.get(

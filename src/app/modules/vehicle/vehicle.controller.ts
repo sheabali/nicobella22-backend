@@ -1,13 +1,17 @@
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { IJwtPayload } from "../../types/auth.type";
+
+import { IImageFiles } from "../../types/imgFile.type";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { VehicleService } from "./vehicle.service";
 
 const createVehicle = catchAsync(async (req: Request, res: Response) => {
+  console.log("aa", req.body);
   const result = await VehicleService.createVehicle(
     req.body,
+    req.files as IImageFiles,
     req.user as IJwtPayload
   );
 
