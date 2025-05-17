@@ -141,7 +141,7 @@ const getAllBooking = async (
   query: Record<string, unknown>,
   authUser: { id: string; role: string; mechanicId?: string; email: string }
 ) => {
-  console.log("authUser", authUser.email);
+  console.log("authUser", authUser.id);
 
   try {
     // Validate email
@@ -153,7 +153,6 @@ const getAllBooking = async (
     const user = await prisma.user.findUnique({
       where: { email: authUser.email },
     });
-    console.log("user", user?.id);
 
     if (!user) {
       throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
@@ -168,14 +167,12 @@ const getAllBooking = async (
       );
     }
 
-    // Define filter based on role
-    let whereClause: any = {};
+    // Build filter based on role
+    const whereClause: Record<string, any> = {};
 
     if (authUser.role === UserRole.USER) {
-      // Regular users see only their bookings
       whereClause.userId = user.id;
     } else if (authUser.role === UserRole.MECHANIC) {
-      // Mechanics see only bookings assigned to them
       if (!authUser.id) {
         throw new ApiError(
           StatusCodes.BAD_REQUEST,
@@ -184,15 +181,17 @@ const getAllBooking = async (
       }
       whereClause.mechanicId = authUser.mechanicId;
     }
-    // Admins see all bookings — keep `whereClause` empty
+    // If Admin: whereClause remains empty => all bookings
 
-    // Fetch bookings
     const bookings = await prisma.booking.findMany({
-      where: whereClause, // Will be empty for Admin = all bookings
+      where: whereClause,
       include: {
         user: true,
         mechanic: true,
         company: true,
+      },
+      orderBy: {
+        createdAt: "desc",
       },
     });
 
