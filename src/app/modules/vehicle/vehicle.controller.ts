@@ -7,6 +7,20 @@ import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { VehicleService } from "./vehicle.service";
 
+// const createPoem = catchAsync(async (req, res) => {
+//   if (req.file) {
+//     req.body.image = ⁠ /uploads/${req.file.filename} ⁠;
+//   }
+
+//   const result = await PoemService.createPoemIntoDB(req.body);
+
+//   sendResponse(res, {
+//     statusCode: status.CREATED,
+//     message: "Poem created successfully!",
+//     data: result,
+//   });
+// });
+
 const createVehicle = catchAsync(async (req: Request, res: Response) => {
   console.log("aa", req.body);
   const result = await VehicleService.createVehicle(
