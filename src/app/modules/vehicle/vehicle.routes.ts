@@ -12,7 +12,6 @@ router.post(
   // validateRequest(),
   auth(UserRole.USER),
   // multerUpload.fields([{ name: "images" }]),
-  // upload.single('file', )
   // parseBody,
 
   upload.single("file"),

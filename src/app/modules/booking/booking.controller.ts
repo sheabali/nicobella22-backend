@@ -6,9 +6,10 @@ import sendResponse from "../../utils/sendResponse";
 import { BookingServices } from "./booking.service";
 
 const createBooking = catchAsync(async (req: Request, res: Response) => {
-  const result = await BookingServices.bookingService({
-    ...req.body,
-  });
+  const result = await BookingServices.bookingService(
+    req.body,
+    req.user as IJwtPayload
+  );
 
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,

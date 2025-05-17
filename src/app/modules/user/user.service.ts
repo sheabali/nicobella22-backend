@@ -28,6 +28,7 @@ const createUserIntoDB = async (payload: User) => {
   });
 
   const jwtPayload = {
+    userId: payload.id,
     firstName: payload.firstName,
     lastName: payload.lastName,
     email: payload.email,

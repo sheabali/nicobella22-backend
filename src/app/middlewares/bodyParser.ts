@@ -1,8 +1,8 @@
-import { NextFunction, Request, Response } from "express";
-import catchAsync from "../utils/catchAsync";
-
 import { StatusCodes } from "http-status-codes";
+
+import { NextFunction, Request, Response } from "express";
 import ApiError from "../errors/ApiError";
+import catchAsync from "../utils/catchAsync";
 
 export const parseBody = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {

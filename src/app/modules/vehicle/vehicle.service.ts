@@ -1,13 +1,11 @@
 import { Vehicle } from "@prisma/client";
 import ApiError from "../../errors/ApiError";
 
-import { StatusCodes } from "http-status-codes";
-import { IImageFiles } from "../../types/imgFile.type";
 import prisma from "../../utils/prisma";
 
 const createVehicle = async (
   payload: Vehicle,
-  mealImages: IImageFiles,
+
   authUser: { id: string; role: string; mechanicId?: string; email: string }
 ) => {
   console.log("aag", payload);
@@ -27,13 +25,11 @@ const createVehicle = async (
     throw new ApiError(400, "Mechanic ID is required for mechanics");
   }
 
-  const { images } = mealImages;
+  // if (!images || images.length === 0) {
+  //   throw new ApiError(StatusCodes.BAD_REQUEST, "Vehicle images are required.");
+  // }
 
-  if (!images || images.length === 0) {
-    throw new ApiError(StatusCodes.BAD_REQUEST, "Vehicle images are required.");
-  }
-
-  payload.image = images.map((image) => image.path);
+  // payload.image = images.map((image) => image.path);
 
   const newVehicle = await prisma.vehicle.create({
     data: {

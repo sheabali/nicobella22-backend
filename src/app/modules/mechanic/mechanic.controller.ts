@@ -1,8 +1,8 @@
-import { Request, Response } from 'express';
-import catchAsync from '../../utils/catchAsync';
-import sendResponse from '../../utils/sendResponse';
-import { StatusCodes } from 'http-status-codes';
-import { MechanicServices } from './mechanic.service';
+import { Request, Response } from "express";
+import { StatusCodes } from "http-status-codes";
+import catchAsync from "../../utils/catchAsync";
+import sendResponse from "../../utils/sendResponse";
+import { MechanicServices } from "./mechanic.service";
 
 // Step 1: Mechanic Registration (Personal Information)
 const mechanicRegistration = catchAsync(async (req: Request, res: Response) => {
@@ -12,7 +12,7 @@ const mechanicRegistration = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
-    message: 'Mechanic registration successful',
+    message: "Mechanic registration successful",
     success: true,
     data: result,
   });
@@ -26,7 +26,7 @@ const addCompany = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
-    message: 'Company information added successfully',
+    message: "Company information added successfully",
     success: true,
     data: result,
   });
@@ -40,7 +40,7 @@ const createWorkingDays = catchAsync(async (req: Request, res: Response) => {
   if (!mechanicId || !workingDays || !Array.isArray(workingDays)) {
     sendResponse(res, {
       statusCode: StatusCodes.BAD_REQUEST,
-      message: 'Mechanic ID and working days array are required',
+      message: "Mechanic ID and working days array are required",
       success: false,
       data: null,
     });
@@ -51,7 +51,7 @@ const createWorkingDays = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
-    message: 'Working days created successfully',
+    message: "Working days created successfully",
     success: true,
     data: result,
   });
@@ -79,7 +79,7 @@ const signUpComplete = catchAsync(async (req: Request, res: Response) => {
 
   sendResponse(res, {
     statusCode: StatusCodes.CREATED,
-    message: 'Mechanic sign-up completed successfully',
+    message: "Mechanic sign-up completed successfully",
     success: true,
     data: result,
   });
@@ -89,6 +89,5 @@ export const MechanicController = {
   mechanicRegistration,
   addCompany,
   createWorkingDays,
-
   signUpComplete,
 };
