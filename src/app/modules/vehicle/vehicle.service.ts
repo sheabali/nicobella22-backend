@@ -21,9 +21,9 @@ const createVehicle = async (
   }
 
   // Optionally check role and mechanicId
-  // if (authUser.role === "user" && !authUser.id) {
-  //   throw new ApiError(400, "Mechanic ID is required for mechanics");
-  // }
+  if (authUser.role === "user" && !authUser.id) {
+    throw new ApiError(400, "Mechanic ID is required for mechanics");
+  }
 
   // if (!images || images.length === 0) {
   //   throw new ApiError(StatusCodes.BAD_REQUEST, "Vehicle images are required.");

@@ -7,8 +7,25 @@ import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { UserRole } from "../../types/user.type";
 
+const generateEstimateId = async (): Promise<string> => {
+  const lastEstimate = await prisma.estimate.findFirst({
+    orderBy: { createdAt: "desc" },
+    select: { estimateId: true },
+  });
+
+  let lastNumber = 0;
+  if (lastEstimate?.estimateId) {
+    const match = lastEstimate.estimateId.match(/\d+$/);
+    if (match) {
+      lastNumber = parseInt(match[0]);
+    }
+  }
+
+  return `EST-${(lastNumber + 1).toString().padStart(5, "0")}`;
+};
 const bookingService = async (
-  payload: Omit<Booking, "id" | "createdAt" | "updatedAt">
+  payload: Omit<Booking, "id" | "createdAt" | "updatedAt">,
+  authUser: { id: string; role: string; mechanicId?: string; email: string }
 ) => {
   try {
     const {
@@ -23,17 +40,19 @@ const bookingService = async (
       phoneNumber,
     } = payload;
 
+    const { id } = authUser;
+
     console.log("booking payload", payload);
 
     // Validate userId
-    if (!ObjectId.isValid(userId)) {
+    if (!ObjectId.isValid(id)) {
       throw new ApiError(
         400,
         "Invalid user ID format. Must be a 24-character hexadecimal string."
       );
     }
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: id },
     });
     if (!user) {
       throw new ApiError(400, "User ID does not exist");
@@ -67,15 +86,19 @@ const bookingService = async (
       throw new ApiError(400, "Company ID does not exist");
     }
 
-    // Additional validation for phoneNumber format (optional)
+    // Validate phone number format
     if (!/^\+?[1-9]\d{1,14}$/.test(phoneNumber)) {
       throw new ApiError(400, "Invalid phone number format");
     }
 
-    // Create new booking
+    // Generate a unique estimate ID
+    const estimateId = await generateEstimateId();
+
+    // Create new booking with estimateId
     const newBooking = await prisma.booking.create({
       data: {
-        user: { connect: { id: userId } },
+        estimateId,
+        user: { connect: { id: id } },
         mechanic: { connect: { id: mechanicId } },
         company: { connect: { id: companyId } },
         service,
@@ -116,29 +139,29 @@ const bookingService = async (
   }
 };
 
-const getAllBooking = async (
+export const getAllBooking = async (
   query: Record<string, unknown>,
   authUser: { id: string; role: string; mechanicId?: string; email: string }
 ) => {
-  console.log("authUser", authUser.email);
+  console.log("📨 Authenticated User:", authUser);
 
   try {
-    // Validate email
-    if (!authUser.email || typeof authUser.email !== "string") {
-      throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid or missing email");
+    // 1. Validate email
+    if (!authUser.id || typeof authUser.id !== "string") {
+      throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid or missing id");
     }
 
-    // Find the user by email
+    // 2. Find user by id
     const user = await prisma.user.findUnique({
-      where: { email: authUser.email },
+      where: { id: authUser.id },
     });
-    console.log("user", user?.id);
+    console.log("✅ User found:", user?.id);
 
     if (!user) {
       throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
     }
 
-    // Validate role
+    // 3. Validate role
     const validRoles = [UserRole.USER, UserRole.MECHANIC, UserRole.ADMIN];
     if (!validRoles.includes(authUser.role as UserRole)) {
       throw new ApiError(
@@ -147,14 +170,12 @@ const getAllBooking = async (
       );
     }
 
-    // Define filter based on role
-    let whereClause: any = {};
+    // // 4. Build filter based on role
+    let whereClause: Record<string, unknown> = {};
 
     if (authUser.role === UserRole.USER) {
-      // Regular users see only their bookings
       whereClause.userId = user.id;
     } else if (authUser.role === UserRole.MECHANIC) {
-      // Mechanics see only bookings assigned to them
       if (!authUser.mechanicId) {
         throw new ApiError(
           StatusCodes.BAD_REQUEST,
@@ -163,24 +184,25 @@ const getAllBooking = async (
       }
       whereClause.mechanicId = authUser.mechanicId;
     }
-    // Admins see all bookings — keep `whereClause` empty
 
-    // Fetch bookings
+    console.log("📦 Where clause:", whereClause);
+
+    // 5. Fetch bookings with included relations
     const bookings = await prisma.booking.findMany({
-      where: whereClause, // Will be empty for Admin = all bookings
+      where: { userId: user.id },
       include: {
         user: true,
-        mechanic: true,
+        mechanic: true, // adjust if your relation name is different
         company: true,
       },
     });
 
+    console.log("📋 Bookings retrieved:", bookings.length);
     return { bookings };
   } catch (error: any) {
-    if (error instanceof ApiError) {
-      throw error;
-    }
+    console.error("❌ Error retrieving bookings:", error);
 
+    // Handle known Prisma error
     if (error instanceof Prisma.PrismaClientKnownRequestError) {
       if (error.code === "P2023") {
         throw new ApiError(
@@ -190,7 +212,12 @@ const getAllBooking = async (
       }
     }
 
-    console.error("Error retrieving bookings:", error);
+    // Re-throw custom API errors
+    if (error instanceof ApiError) {
+      throw error;
+    }
+
+    // Fallback internal error
     throw new ApiError(
       StatusCodes.INTERNAL_SERVER_ERROR,
       "Failed to retrieve bookings",
