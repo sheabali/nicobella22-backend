@@ -1,9 +1,8 @@
-import { Router } from "express";
+import { NextFunction, Request, Response, Router } from "express";
 
-import { multerUpload } from "../../config/multer.config";
 import auth from "../../middlewares/auth";
-import { parseBody } from "../../middlewares/bodyParser";
 import { UserRole } from "../../types/user.type";
+import { upload } from "../../utils/upload";
 import { VehicleController } from "./vehicle.controller";
 
 const router = Router();
@@ -12,8 +11,14 @@ router.post(
   "/",
   // validateRequest(),
   auth(UserRole.USER),
-  multerUpload.fields([{ name: "images" }]),
-  parseBody,
+  // multerUpload.fields([{ name: "images" }]),
+  // parseBody,
+
+  upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
   VehicleController.createVehicle
 );
 router.get(
