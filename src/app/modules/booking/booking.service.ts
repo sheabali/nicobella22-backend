@@ -7,6 +7,23 @@ import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
 import { UserRole } from "../../types/user.type";
 
+const generateEstimateId = async (): Promise<string> => {
+  const lastBooking = await prisma.booking.findFirst({
+    orderBy: { createdAt: "desc" },
+    select: { estimateId: true },
+  });
+
+  let lastNumber = 0;
+  if (lastBooking?.estimateId) {
+    const match = lastBooking.estimateId.match(/\d+$/);
+    if (match) {
+      lastNumber = parseInt(match[0]);
+    }
+  }
+
+  return `EST-${(lastNumber + 1).toString().padStart(5, "0")}`;
+};
+
 const bookingService = async (
   payload: Omit<Booking, "id" | "createdAt" | "updatedAt">
 ) => {
@@ -72,12 +89,16 @@ const bookingService = async (
       throw new ApiError(400, "Invalid phone number format");
     }
 
+    // Generate a unique estimate ID
+    const estimateId = await generateEstimateId();
+
     // Create new booking
     const newBooking = await prisma.booking.create({
       data: {
         user: { connect: { id: userId } },
         mechanic: { connect: { id: mechanicId } },
         company: { connect: { id: companyId } },
+        estimateId,
         service,
         amount,
         date: new Date(date),
@@ -155,7 +176,7 @@ const getAllBooking = async (
       whereClause.userId = user.id;
     } else if (authUser.role === UserRole.MECHANIC) {
       // Mechanics see only bookings assigned to them
-      if (!authUser.mechanicId) {
+      if (!authUser.id) {
         throw new ApiError(
           StatusCodes.BAD_REQUEST,
           "Mechanic ID is required for mechanic role"
