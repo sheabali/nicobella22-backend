@@ -16,5 +16,10 @@ router.get(
   auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
   EstimateController.getAllEstimateController
 );
+router.patch(
+  "/:estimateId",
+  auth(UserRole.MECHANIC), // make sure this middleware sets req.user
+  EstimateController.updateEstimateController
+);
 
 export const EstimateRoutes = router;

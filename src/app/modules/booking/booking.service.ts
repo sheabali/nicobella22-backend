@@ -1,4 +1,4 @@
-import { Booking, Prisma } from "@prisma/client";
+import { Prisma } from "@prisma/client";
 import { ObjectId } from "mongodb";
 import ApiError from "../../errors/ApiError";
 import prisma from "../../utils/prisma";
@@ -23,10 +23,12 @@ const generateEstimateId = async (): Promise<string> => {
 
   return `EST-${(lastNumber + 1).toString().padStart(5, "0")}`;
 };
-const bookingService = async (
-  payload: Omit<Booking, "id" | "createdAt" | "updatedAt">,
-  authUser: { id: string; role: string; mechanicId?: string; email: string }
+export const bookingService = async (
+  payload: Omit<Prisma.BookingCreateInput, "id" | "createdAt" | "updatedAt">,
+  authUser: { id: string; role: string; email: string }
 ) => {
+  console.log("authUser", authUser);
+
   try {
     const {
       userId,
@@ -38,53 +40,35 @@ const bookingService = async (
       location,
       countryCode,
       phoneNumber,
-    } = payload;
+    } = payload as any;
 
     const { id } = authUser;
 
-    console.log("booking payload", payload);
-
     // Validate userId
     if (!ObjectId.isValid(id)) {
-      throw new ApiError(
-        400,
-        "Invalid user ID format. Must be a 24-character hexadecimal string."
-      );
+      throw new ApiError(400, "Invalid user ID format");
     }
-    const user = await prisma.user.findUnique({
-      where: { id: id },
-    });
-    if (!user) {
-      throw new ApiError(400, "User ID does not exist");
-    }
+    const user = await prisma.user.findUnique({ where: { id: userId } });
+    if (!user) throw new ApiError(400, "User ID does not exist");
+    console.log("user", user);
 
     // Validate mechanicId
     if (!ObjectId.isValid(mechanicId)) {
-      throw new ApiError(
-        400,
-        "Invalid mechanic ID format. Must be a 24-character hexadecimal string."
-      );
+      throw new ApiError(400, "Invalid mechanic ID format");
     }
     const mechanic = await prisma.mechanicRegistration.findUnique({
       where: { id: mechanicId },
     });
-    if (!mechanic) {
-      throw new ApiError(400, "Mechanic ID does not exist");
-    }
+    if (!mechanic) throw new ApiError(400, "Mechanic ID does not exist");
 
     // Validate companyId
     if (!ObjectId.isValid(companyId)) {
-      throw new ApiError(
-        400,
-        "Invalid company ID format. Must be a 24-character hexadecimal string."
-      );
+      throw new ApiError(400, "Invalid company ID format");
     }
     const company = await prisma.company.findUnique({
       where: { id: companyId },
     });
-    if (!company) {
-      throw new ApiError(400, "Company ID does not exist");
-    }
+    if (!company) throw new ApiError(400, "Company ID does not exist");
 
     // Validate phone number format
     if (!/^\+?[1-9]\d{1,14}$/.test(phoneNumber)) {
@@ -94,16 +78,22 @@ const bookingService = async (
     // Generate a unique estimate ID
     const estimateId = await generateEstimateId();
 
-    // Create new booking with estimateId
+    // Simulate a failure (remove this in production)
+    // throw new Error("Simulated failure");
+
+    // Intentionally bad date to trigger error
+    const bookingDate = new Date(date); // If invalid, this will fail in Prisma
+
+    // Create new booking
     const newBooking = await prisma.booking.create({
       data: {
         estimateId,
-        user: { connect: { id: id } },
+        user: { connect: { id: userId } },
         mechanic: { connect: { id: mechanicId } },
         company: { connect: { id: companyId } },
         service,
         amount,
-        date: new Date(date),
+        date: bookingDate,
         location,
         countryCode,
         phoneNumber,
@@ -134,11 +124,11 @@ const bookingService = async (
         throw new ApiError(400, "Invalid ID format: Malformed ObjectID");
       }
     }
+
     console.error("Error creating booking:", error);
     throw new ApiError(500, "Failed to create booking", error.message);
   }
 };
-
 export const getAllBooking = async (
   query: Record<string, unknown>,
   authUser: { id: string; role: string; mechanicId?: string; email: string }

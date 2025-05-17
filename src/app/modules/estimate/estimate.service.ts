@@ -74,6 +74,8 @@ const getAllEstimate = async (
   query: Record<string, any>,
   authUser: { id: string; role: string }
 ) => {
+  console.log("authUser", authUser);
+
   // Base filters based on role
   const filters: Prisma.EstimateWhereInput = {};
   if (authUser.role === "USER") {
@@ -105,7 +107,27 @@ const getAllEstimate = async (
   };
 };
 
+const updateEstimateStatus = async (estimateId: string, status: Status) => {
+  console.log("Updating estimateId:", estimateId, "to status:", status);
+
+  try {
+    const updatedEstimate = await prisma.booking.update({
+      where: {
+        id: estimateId,
+      },
+      data: {
+        status, // Must be one of: "PENDING", "ACCEPT", "REJECT"
+      },
+    });
+
+    return updatedEstimate;
+  } catch (error: any) {
+    console.error("Failed to update estimate status:", error.message);
+    throw new Error("Could not update estimate status");
+  }
+};
 export const EstimateService = {
   createEstimate,
   getAllEstimate,
+  updateEstimateStatus,
 };

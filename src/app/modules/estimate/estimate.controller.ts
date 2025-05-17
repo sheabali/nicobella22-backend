@@ -1,3 +1,4 @@
+import { Status } from "@prisma/client";
 import { Request, Response } from "express";
 import { StatusCodes } from "http-status-codes";
 import { IJwtPayload } from "../../types/auth.type";
@@ -34,7 +35,32 @@ export const getAllEstimateController = catchAsync(
     });
   }
 );
+
+const updateEstimateController = catchAsync(
+  async (req: Request, res: Response) => {
+    const authUser = req.user as IJwtPayload;
+    const { estimateId } = req.params;
+    const { status } = req.body;
+
+    if (!status || !["PENDING", "ACCEPT", "REJECT"].includes(status)) {
+      throw new Error("Invalid or missing status value");
+    }
+
+    const updatedEstimate = await EstimateService.updateEstimateStatus(
+      estimateId,
+      status as Status
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      success: true,
+      message: "Estimate status updated successfully",
+      data: updatedEstimate,
+    });
+  }
+);
 export const EstimateController = {
   createEstimateController,
   getAllEstimateController,
+  updateEstimateController,
 };

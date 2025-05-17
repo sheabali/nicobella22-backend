@@ -50,6 +50,7 @@ const registerService = async (payload: Partial<MechanicRegistration>) => {
     // Create MechanicRegistration entry
     const newRegistration = await prisma.mechanicRegistration.create({
       data: {
+        id: payload.id,
         firstName: payload.firstName!,
         lastName: payload.lastName!,
         email: payload.email!,

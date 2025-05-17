@@ -3,6 +3,7 @@ import { AuthRoutes } from "../modules/auth/auth.route";
 import { BookingRoutes } from "../modules/booking/booking.routes";
 import { CompanyRoutes } from "../modules/company/company.routes";
 import { EstimateRoutes } from "../modules/estimate/estimate.routes";
+import { InvoiceRoutes } from "../modules/invoice/invoice.routes";
 import { MechanicRoutes } from "../modules/mechanic/mechanic.routes";
 import { UserRoutes } from "../modules/user/user.routes";
 import { VehicleRoutes } from "../modules/vehicle/vehicle.routes";
@@ -36,6 +37,10 @@ const moduleRoutes = [
   {
     path: "/estimate",
     route: EstimateRoutes,
+  },
+  {
+    path: "/invoice",
+    route: InvoiceRoutes,
   },
 ];
 
