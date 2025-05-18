@@ -342,11 +342,14 @@ model User {
   invoices      Invoice[]             @relation("UserInvoices")
   userEstimates UserEstimate[]
   estimates     Estimate[]
+  
   feedbacks     Feedback[]
   bookings      Booking[]
 
   @@map("users")
   Vehicle Vehicle[]
+  ServicePricing ServicePricing[]
+  Invoice Invoice[]
 }
 
 model Photo {
@@ -373,11 +376,11 @@ model MechanicRegistration {
   companies      Company[]
   workingDays    WorkingDay[]
   estimates      Estimate[]
-  invoices       Invoice[]
+ 
   feedbacks      Feedback[]
   bookings       Booking[]
   users          User[]
-  ServicePricing ServicePricing[]
+  // ServicePricing ServicePricing[]
 
   @@map("mechanics")
 }
@@ -392,7 +395,6 @@ model Company {
   email       String   @unique
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
-
   mechanicId String?               @db.ObjectId
   mechanic   MechanicRegistration? @relation(fields: [mechanicId], references: [id])
   invoices   Invoice[]
@@ -407,7 +409,6 @@ model WorkingDay {
   isClosed  Boolean
   openTime  String?
   closeTime String?
-
   mechanicId String               @db.ObjectId
   mechanic   MechanicRegistration @relation(fields: [mechanicId], references: [id])
 
@@ -468,7 +469,7 @@ model Invoice {
   companyId    String               @db.ObjectId
   company      Company              @relation(fields: [companyId], references: [id])
   mechanicId   String               @db.ObjectId
-  mechanic     MechanicRegistration @relation(fields: [mechanicId], references: [id])
+  mechanic     User @relation(fields: [mechanicId], references: [id])
   serviceType  String
   servicePrice Float
   date         DateTime             @default(now())
@@ -518,14 +519,28 @@ model Booking {
   @@map("bookings")
 }
 
+// model ServicePricing {
+//   id           String               @id @default(auto()) @map("_id") @db.ObjectId
+//   mechanicId   String               @db.ObjectId
+//   mechanic     MechanicRegistration @relation(fields: [mechanicId], references: [id])
+//   serviceName  String
+//   servicePrice Float                @default(0.00)
+//   createdAt    DateTime             @default(now())
+//   updatedAt    DateTime             @updatedAt
+
+//   @@map("service_pricings")
+// }
+
 model ServicePricing {
-  id           String               @id @default(auto()) @map("_id") @db.ObjectId
-  mechanicId   String               @db.ObjectId
-  mechanic     MechanicRegistration @relation(fields: [mechanicId], references: [id])
+  id           String                @id @default(auto()) @map("_id") @db.ObjectId
+  mechanicId   String?               @db.ObjectId
+  mechanic     User? @relation(fields: [mechanicId], references: [id])
   serviceName  String
-  servicePrice Float                @default(0.00)
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @updatedAt
+  servicePrice Float                 @default(0.00)
+  isActive     Boolean               @default(true)
+  createdAt    DateTime              @default(now())
+  updatedAt    DateTime              @updatedAt
 
   @@map("service_pricings")
 }
+

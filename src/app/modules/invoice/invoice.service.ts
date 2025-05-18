@@ -1,4 +1,5 @@
 import { Invoice } from "@prisma/client";
+import { IJwtPayload } from "../../types/auth.type";
 import prisma from "../../utils/prisma";
 
 const createInvoice = async (
@@ -36,6 +37,50 @@ const createInvoice = async (
   return invoice;
 };
 
+const getAllInvoice = async (authUser: IJwtPayload) => {
+  try {
+    let whereClause = {};
+
+    if (authUser.role === "USER") {
+      whereClause = { userId: authUser.id };
+    } else if (authUser.role === "MECHANIC") {
+      whereClause = { mechanicId: authUser.id };
+    } else if (authUser.role === "ADMIN") {
+      whereClause = {}; // no filter, return all invoices
+    } else {
+      return {
+        success: false,
+        message: "Unauthorized role.",
+      };
+    }
+
+    const invoices = await prisma.invoice.findMany({
+      where: whereClause,
+      orderBy: {
+        createdAt: "desc",
+      },
+      include: {
+        // user: true,
+        // mechanic: true,
+      },
+    });
+
+    return {
+      success: true,
+      data: invoices,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "An error occurred while fetching invoices.",
+    };
+  }
+};
+
 export const InvoiceService = {
   createInvoice,
+  getAllInvoice,
 };

@@ -14,10 +14,10 @@ router.post(
   auth(UserRole.MECHANIC),
   InvoiceController.createInvoiceController
 );
-// router.get(
-//   "/",
-//   auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
-//   BookingController.getAllBooking
-// );
+router.get(
+  "/",
+  auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
+  InvoiceController.getAllInvoiceController
+);
 
 export const InvoiceRoutes = router;

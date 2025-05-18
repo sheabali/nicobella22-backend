@@ -146,9 +146,107 @@ const warningMechanic = async (mechanicId: string, warning: string) => {
   }
 };
 
+const getAllService = async (query: unknown, authUser: IJwtPayload) => {
+  try {
+    const queryBuilder = new QueryBuilder(
+      prisma.servicePricing,
+      query as Record<string, unknown>
+    );
+
+    const services = await queryBuilder
+      .search(["serviceName"])
+      .filter()
+      .include({ mechanic: true }) // now safely handled
+      .sort()
+      .paginate()
+      .execute();
+
+    const meta = await queryBuilder.countTotal();
+
+    return {
+      success: true,
+      data: services,
+      meta,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "An error occurred while fetching services.",
+    };
+  }
+};
+
+const deactivateService = async (serviceId: string, status: boolean) => {
+  try {
+    // Fetch mechanic by ID
+    const service = await prisma.servicePricing.findUnique({
+      where: { id: serviceId },
+    });
+
+    // If not found, throw error early
+    if (!service) {
+      throw new Error("Service not found.");
+    }
+
+    // Update isActive status
+    const updatedService = await prisma.servicePricing.update({
+      where: { id: serviceId },
+      data: { isActive: status },
+    });
+
+    return {
+      success: true,
+      data: updatedService,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "An error occurred.",
+    };
+  }
+};
+
+const deleteService = async (serviceId: string) => {
+  try {
+    const existingService = await prisma.servicePricing.findUnique({
+      where: { id: serviceId },
+    });
+
+    if (!existingService) {
+      return {
+        success: false,
+        message: "Service not found.",
+      };
+    }
+
+    // Delete the service
+    await prisma.servicePricing.delete({
+      where: { id: serviceId },
+    });
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "An error occurred while deleting the service.",
+    };
+  }
+};
+
 export const AccountService = {
   getAllMechanic,
   getAllUser,
   deactivateMechanic,
   warningMechanic,
+  getAllService,
+  deactivateService,
+  deleteService,
 };

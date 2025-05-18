@@ -18,4 +18,21 @@ router.patch(
   auth(UserRole.ADMIN),
   AccountController.warningMechanic
 );
+
+router.get(
+  "/service",
+  // auth(UserRole.ADMIN),
+  AccountController.getAllServiceController
+);
+router.patch(
+  "/service/:serviceId",
+  auth(UserRole.ADMIN),
+  AccountController.deactivateService
+);
+router.delete(
+  "/service/:serviceId",
+  auth(UserRole.ADMIN),
+  AccountController.deleteService
+);
+
 export const AccountRoutes = router;

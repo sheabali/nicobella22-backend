@@ -14,7 +14,19 @@ const createInvoiceController = catchAsync(
 
     sendResponse(res, {
       statusCode: StatusCodes.CREATED,
-      message: "createCompany registration succesfully",
+      message: "Create Invoice succesfully",
+      success: true,
+      data: result,
+    });
+  }
+);
+const getAllInvoiceController = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await InvoiceService.getAllInvoice(req.user as IJwtPayload);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.CREATED,
+      message: "Invoice are retrieved successfully",
       success: true,
       data: result,
     });
@@ -23,4 +35,5 @@ const createInvoiceController = catchAsync(
 
 export const InvoiceController = {
   createInvoiceController,
+  getAllInvoiceController,
 };
