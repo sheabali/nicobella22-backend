@@ -5,6 +5,7 @@ import prisma from "../../utils/prisma";
 
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
+import { IJwtPayload } from "../../types/auth.type";
 import { UserRole } from "../../types/user.type";
 
 const generateEstimateId = async (): Promise<string> => {
@@ -25,7 +26,8 @@ const generateEstimateId = async (): Promise<string> => {
 };
 
 const bookingService = async (
-  payload: Omit<Booking, "id" | "createdAt" | "updatedAt">
+  payload: Omit<Booking, "id" | "createdAt" | "updatedAt">,
+  p0: IJwtPayload
 ) => {
   try {
     const {
