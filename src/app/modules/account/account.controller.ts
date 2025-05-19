@@ -96,14 +96,39 @@ const deleteService = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const deleteCustomer = catchAsync(async (req: Request, res: Response) => {
+  const { customerId } = req.params;
+
+  const result = await AccountService.deleteCustomer(customerId);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Customer deleted successfully.",
+    success: true,
+    data: result,
+  });
+});
+
+const deactivateCustomer = catchAsync(async (req: Request, res: Response) => {
+  const { customerId } = req.params;
+  const { isActive } = req.body;
+  console.log("status from", isActive);
+  const result = await AccountService.deactivateCustomer(customerId, isActive);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Customer deactivate successfully",
+    success: true,
+    data: result,
+  });
+});
 
 export const AccountController = {
   getAllMechanic,
   getAllUser,
-
+  deleteCustomer,
   deactivateMechanic,
   warningMechanic,
   getAllServiceController,
   deleteService,
   deactivateService,
+  deactivateCustomer,
 };

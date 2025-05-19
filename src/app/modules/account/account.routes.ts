@@ -35,4 +35,16 @@ router.delete(
   AccountController.deleteService
 );
 
+router.delete(
+  "/customer/:customerId",
+  auth(UserRole.ADMIN),
+  AccountController.deleteCustomer
+);
+
+router.patch(
+  "/customer/:customerId",
+  auth(UserRole.ADMIN),
+  AccountController.deactivateCustomer
+);
+
 export const AccountRoutes = router;

@@ -241,6 +241,77 @@ const deleteService = async (serviceId: string) => {
   }
 };
 
+const deleteCustomer = async (customerId: string) => {
+  try {
+    const existingService = await prisma.user.findUnique({
+      where: { id: customerId },
+    });
+
+    if (!existingService) {
+      return {
+        success: false,
+        message: "User not found.",
+      };
+    }
+
+    // Delete the service
+    await prisma.user.delete({
+      where: { id: customerId },
+    });
+
+    return {
+      success: true,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "An error occurred while deleting the service.",
+    };
+  }
+};
+
+const deactivateCustomer = async (customerId: string, status: boolean) => {
+  try {
+    // Fetch mechanic by ID
+    const customer = await prisma.user.findUnique({
+      where: { id: customerId },
+    });
+
+    console.log("warning", status);
+
+    // If not found, throw error early
+    if (!customer) {
+      throw new Error("customer not found.");
+    }
+
+    // If role is not MECHANIC, throw error
+    if (customer.role !== "USER") {
+      throw new Error(
+        "Invalid role. Only customer can be deactivated via this route."
+      );
+    }
+
+    // Update isActive status
+    const updatedMechanic = await prisma.user.update({
+      where: { id: customerId },
+      data: { isActive: status },
+    });
+
+    return {
+      success: true,
+      data: updatedMechanic,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "An error occurred.",
+    };
+  }
+};
+
 export const AccountService = {
   getAllMechanic,
   getAllUser,
@@ -248,5 +319,7 @@ export const AccountService = {
   warningMechanic,
   getAllService,
   deactivateService,
+  deleteCustomer,
   deleteService,
+  deactivateCustomer,
 };
