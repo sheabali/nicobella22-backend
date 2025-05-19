@@ -1,4 +1,7 @@
+import { Status } from "@prisma/client";
+import { StatusCodes } from "http-status-codes";
 import QueryBuilder from "../../builder/QueryBuilder";
+import ApiError from "../../errors/ApiError";
 import { IJwtPayload } from "../../types/auth.type";
 import prisma from "../../utils/prisma";
 
@@ -312,6 +315,86 @@ const deactivateCustomer = async (customerId: string, status: boolean) => {
   }
 };
 
+const appointmentService = async (query: unknown, authUser: IJwtPayload) => {
+  try {
+    // Ensure only ADMIN can access
+    if (authUser.role !== "ADMIN") {
+      throw new Error("Unauthorized: Only admin can view appointments.");
+    }
+
+    const queryBuilder = new QueryBuilder(
+      prisma.booking,
+      query as Record<string, unknown>
+    );
+
+    const appointments = await queryBuilder
+      .search(["customerName", "mechanicName"])
+      .filter()
+      .include({
+        user: true,
+        mechanic: true,
+        company: true, // optional, if you want company data as well
+      })
+
+      .sort()
+      .paginate()
+      .execute();
+
+    const meta = await queryBuilder.countTotal();
+
+    return {
+      success: true,
+      data: appointments,
+      meta,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "An error occurred while fetching appointments.",
+    };
+  }
+};
+
+const appointmentStatus = async (
+  appointmentId: string,
+  {
+    status,
+  }: {
+    status: Status;
+  }
+) => {
+  // Validate new status
+  const validStatuses = Object.values(Status);
+  if (!validStatuses.includes(status as Status)) {
+    throw new ApiError(
+      StatusCodes.BAD_REQUEST,
+      `Invalid status. Allowed statuses: ${validStatuses.join(", ")}`
+    );
+  }
+
+  // Find booking
+  const booking = await prisma.booking.findUnique({
+    where: { id: appointmentId },
+  });
+
+  if (!booking) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "Appointment not found.");
+  }
+
+  // Update status
+  const updatedBooking = await prisma.booking.update({
+    where: { id: appointmentId },
+    data: { status: status as Status },
+  });
+
+  return {
+    updatedBooking,
+  };
+};
+
 export const AccountService = {
   getAllMechanic,
   getAllUser,
@@ -322,4 +405,6 @@ export const AccountService = {
   deleteCustomer,
   deleteService,
   deactivateCustomer,
+  appointmentService,
+  appointmentStatus,
 };

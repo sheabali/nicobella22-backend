@@ -55,7 +55,7 @@ const loginUser = async (email: string, password: string) => {
     id: user.id,
     lastName: user.lastName,
     email: user.email,
-    profilePic: user.profilePic,
+    profilePic: user.image || "",
     role: user.role,
     isActive: user.isActive,
   };
@@ -116,7 +116,7 @@ const forgotPassword = async (email: string) => {
     lastName: user.lastName,
     email: user.email,
     id: user.id,
-    profilePic: user.profilePic,
+    profilePic: user.image || "",
     role: user.role,
     isActive: user.isActive,
   };

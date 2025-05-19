@@ -121,6 +121,44 @@ const deactivateCustomer = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const appointmentController = catchAsync(
+  async (req: Request, res: Response) => {
+    const query = req.query;
+
+    const result = await AccountService.appointmentService(
+      query,
+      req.user as IJwtPayload
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      message: "Appointments retrieved successfully",
+      success: true,
+      data: result,
+    });
+  }
+);
+
+const appointmentStatusController = catchAsync(
+  async (req: Request, res: Response) => {
+    const { appointmentId } = req.params;
+    const { status } = req.body;
+    console.log("status from", { status });
+
+    const result = await AccountService.appointmentStatus(
+      appointmentId as string,
+      { status }
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      message: "Appointment status updated successfully",
+      success: true,
+      data: result,
+    });
+  }
+);
+
 export const AccountController = {
   getAllMechanic,
   getAllUser,
@@ -131,4 +169,6 @@ export const AccountController = {
   deleteService,
   deactivateService,
   deactivateCustomer,
+  appointmentController,
+  appointmentStatusController,
 };

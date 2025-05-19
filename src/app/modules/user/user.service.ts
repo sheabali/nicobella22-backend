@@ -109,6 +109,7 @@ const updateUserIntoDB = async (userId: string, payload: Partial<User>) => {
     throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
+  // Optional fallback
   if (!payload.image) {
     payload.image = isUserExist.image;
   }

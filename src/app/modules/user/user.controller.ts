@@ -1,4 +1,5 @@
 import status from "http-status";
+import { IJwtPayload } from "../../types/auth.type";
 import catchAsync from "../../utils/catchAsync";
 import sendResponse from "../../utils/sendResponse";
 import { UserService } from "./user.service";
@@ -39,13 +40,12 @@ const getAllUser = catchAsync(async (req, res) => {
 });
 
 const updateUser = catchAsync(async (req, res) => {
-  const { userId } = req.params;
-
   if (req.file) {
-    req.body.profilePic = `/uploads/${req.file.filename}`;
+    req.body.image = `/uploads/${req.file.filename}`;
   }
 
-  const result = await UserService.updateUserIntoDB(userId, req.body);
+  const user = req.user as IJwtPayload;
+  const result = await UserService.updateUserIntoDB(user.id, req.body);
 
   sendResponse(res, {
     statusCode: status.OK,

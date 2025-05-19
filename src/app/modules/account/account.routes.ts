@@ -46,6 +46,17 @@ router.patch(
   auth(UserRole.ADMIN),
   AccountController.deactivateCustomer
 );
+router.get(
+  "/appointment",
+  auth(UserRole.ADMIN),
+  AccountController.appointmentController
+);
+
+router.patch(
+  "/appointment/:appointmentId",
+  auth(UserRole.ADMIN),
+  AccountController.appointmentStatusController
+);
 
 // router.post("need-help", auth(UserRole.USER), AccountController.needHelp);
 
