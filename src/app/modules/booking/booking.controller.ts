@@ -19,17 +19,21 @@ const createBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 const getAllBooking = catchAsync(async (req: Request, res: Response) => {
-  // Pass query parameters and authenticated user to the service
+  // Call the service with query and authenticated user
   const result = await BookingServices.getAllBooking(
     req.query,
     req.user as IJwtPayload
   );
-  console.log("result", result);
+
+  // Respond with both bookings and pagination meta info
   sendResponse(res, {
-    statusCode: StatusCodes.OK, // Use 200 for retrieval
+    statusCode: StatusCodes.OK,
     message: "Bookings retrieved successfully",
     success: true,
-    data: result.bookings, // The bookings array
+    data: {
+      bookings: result.bookings,
+      meta: result.meta,
+    },
   });
 });
 

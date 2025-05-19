@@ -303,8 +303,8 @@
 //   updatedAt    DateTime             @updatedAt
 
 //   @@map("invoices")
-// }
-generator client {
+// }generator client {
+ generator client {
   provider = "prisma-client-js"
 }
 
@@ -331,26 +331,32 @@ model User {
   lastName      String
   email         String                @unique
   password      String
-  image    String?               @default("")
+  image         String?               @default("")
   isActive      Boolean               @default(true)
   role          UserRole              @default(USER)
   warning       String?
   createdAt     DateTime              @default(now())
   updatedAt     DateTime              @updatedAt
+
   mechanicId    String?               @db.ObjectId
   mechanic      MechanicRegistration? @relation(fields: [mechanicId], references: [id])
-  invoices      Invoice[]             @relation("UserInvoices")
-  userEstimates UserEstimate[]
-  estimates     Estimate[]
-  
-  feedbacks     Feedback[]
-  bookings      Booking[]
+
+  invoices          Invoice[]         @relation("UserInvoices")
+  userEstimates     UserEstimate[]
+  estimates         Estimate[]
+  feedbacks         Feedback[]
+
+  // ✅ Replace ambiguous 'bookings' with these:
+  userBookings      Booking[]         @relation("UserBookings")
+  mechanicBookings  Booking[]         @relation("MechanicBookings")
+
+  Vehicle           Vehicle[]
+  ServicePricing    ServicePricing[]
+  Invoice           Invoice[]
 
   @@map("users")
-  Vehicle Vehicle[]
-  ServicePricing ServicePricing[]
-  Invoice Invoice[]
 }
+
 
 model Photo {
   id    String  @id @default(auto()) @map("_id") @db.ObjectId
@@ -378,7 +384,7 @@ model MechanicRegistration {
   estimates      Estimate[]
  
   feedbacks      Feedback[]
-  bookings       Booking[]
+  // bookings       Booking[]
   users          User[]
   // ServicePricing ServicePricing[]
 
@@ -498,13 +504,16 @@ model Feedback {
 }
 
 model Booking {
-  id          String               @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String               @db.ObjectId
-  user        User                 @relation(fields: [userId], references: [id])
-  mechanicId  String               @db.ObjectId
-  mechanic     MechanicRegistration @relation(fields: [mechanicId], references: [id])
-  companyId   String               @db.ObjectId
-  company     Company              @relation(fields: [companyId], references: [id])
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation("UserBookings", fields: [userId], references: [id])
+
+  mechanicId  String?   @db.ObjectId
+  mechanic    User?     @relation("MechanicBookings", fields: [mechanicId], references: [id])
+
+  companyId   String   @db.ObjectId
+  company     Company  @relation(fields: [companyId], references: [id])
+  
   service     String
   amount      Float
   estimateId  String   @unique
@@ -512,12 +521,14 @@ model Booking {
   location    String
   countryCode String
   phoneNumber String
-  status      Status               @default(PENDING)
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
+  status      Status   @default(PENDING)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("bookings")
 }
+
+
 
 // model ServicePricing {
 //   id           String               @id @default(auto()) @map("_id") @db.ObjectId

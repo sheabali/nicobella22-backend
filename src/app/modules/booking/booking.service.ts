@@ -5,6 +5,7 @@ import prisma from "../../utils/prisma";
 
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
+import QueryBuilder from "../../builder/QueryBuilder";
 import { IJwtPayload } from "../../types/auth.type";
 import { UserRole } from "../../types/user.type";
 
@@ -59,14 +60,14 @@ const bookingService = async (
     }
 
     // Validate mechanicId
-    if (!ObjectId.isValid(mechanicId)) {
+    if (!mechanicId || !ObjectId.isValid(mechanicId)) {
       throw new ApiError(
         400,
         "Invalid mechanic ID format. Must be a 24-character hexadecimal string."
       );
     }
-    const mechanic = await prisma.mechanicRegistration.findUnique({
-      where: { id: mechanicId },
+    const mechanic = await prisma.user.findUnique({
+      where: { id: mechanicId ?? undefined },
     });
     if (!mechanic) {
       throw new ApiError(400, "Mechanic ID does not exist");
@@ -89,6 +90,10 @@ const bookingService = async (
     // Additional validation for phoneNumber format (optional)
     if (!/^\+?[1-9]\d{1,14}$/.test(phoneNumber)) {
       throw new ApiError(400, "Invalid phone number format");
+    }
+
+    if (user.role == UserRole.MECHANIC) {
+      throw new ApiError(403, "Mechanic are not create a booking");
     }
 
     // Generate a unique estimate ID
@@ -143,15 +148,13 @@ const getAllBooking = async (
   query: Record<string, unknown>,
   authUser: { id: string; role: string; mechanicId?: string; email: string }
 ) => {
-  console.log("authUser", authUser.id);
-
   try {
     // Validate email
     if (!authUser.email || typeof authUser.email !== "string") {
       throw new ApiError(StatusCodes.BAD_REQUEST, "Invalid or missing email");
     }
 
-    // Find the user by email
+    // Fetch user by email
     const user = await prisma.user.findUnique({
       where: { email: authUser.email },
     });
@@ -169,50 +172,62 @@ const getAllBooking = async (
       );
     }
 
-    // Build filter based on role
-    const whereClause: Record<string, any> = {};
-
+    // Build role-based filter
+    const rawFilter: Record<string, any> = {};
     if (authUser.role === UserRole.USER) {
-      whereClause.userId = user.id;
+      rawFilter.userId = user.id;
     } else if (authUser.role === UserRole.MECHANIC) {
       if (!authUser.id) {
-        throw new ApiError(
-          StatusCodes.BAD_REQUEST,
-          "Mechanic ID is required for mechanic role"
-        );
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Mechanic ID is required");
       }
-      whereClause.mechanicId = authUser.mechanicId;
+      rawFilter.mechanicId = authUser.id;
     }
-    // If Admin: whereClause remains empty => all bookings
 
-    const bookings = await prisma.booking.findMany({
-      where: whereClause,
-      include: {
-        user: true,
-        mechanic: true,
+    // Use QueryBuilder
+    const queryBuilder = new QueryBuilder(prisma.booking, query)
+      .rawFilter(rawFilter)
+      .search(["status", "bookingCode"]) // make sure these fields exist
+      .filter()
+      .sort()
+      .paginate()
+      .include({
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            email: true,
+          },
+        },
+        mechanic: {
+          select: {
+            id: true,
+            firstName: true,
+            email: true,
+          },
+        },
         company: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+      });
 
-    return { bookings };
+    const [bookings, meta] = await Promise.all([
+      queryBuilder.execute(),
+      queryBuilder.countTotal(),
+    ]);
+
+    return { bookings, meta };
   } catch (error: any) {
-    if (error instanceof ApiError) {
-      throw error;
+    if (error instanceof ApiError) throw error;
+
+    if (
+      error instanceof Prisma.PrismaClientKnownRequestError &&
+      error.code === "P2023"
+    ) {
+      throw new ApiError(
+        StatusCodes.BAD_REQUEST,
+        "Invalid ID format: Malformed ObjectID"
+      );
     }
 
-    if (error instanceof Prisma.PrismaClientKnownRequestError) {
-      if (error.code === "P2023") {
-        throw new ApiError(
-          StatusCodes.BAD_REQUEST,
-          "Invalid ID format: Malformed ObjectID"
-        );
-      }
-    }
-
-    console.error("Error retrieving bookings:", error);
+    console.error("❌ Error retrieving bookings:", error);
     throw new ApiError(
       StatusCodes.INTERNAL_SERVER_ERROR,
       "Failed to retrieve bookings",
