@@ -6,6 +6,7 @@ import { CompanyRoutes } from "../modules/company/company.routes";
 import { EstimateRoutes } from "../modules/estimate/estimate.routes";
 import { InvoiceRoutes } from "../modules/invoice/invoice.routes";
 import { MechanicRoutes } from "../modules/mechanic/mechanic.routes";
+import { NeedHelpRoutes } from "../modules/needHelp/needHelp.routes";
 import { ServiceRoutes } from "../modules/service/service.routes";
 import { UserRoutes } from "../modules/user/user.routes";
 import { VehicleRoutes } from "../modules/vehicle/vehicle.routes";
@@ -51,6 +52,10 @@ const moduleRoutes = [
   {
     path: "/admin",
     route: AccountRoutes,
+  },
+  {
+    path: "/need-help",
+    route: NeedHelpRoutes,
   },
 ];
 
