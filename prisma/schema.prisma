@@ -476,6 +476,8 @@ model Invoice {
   company      Company              @relation(fields: [companyId], references: [id])
   mechanicId   String               @db.ObjectId
   mechanic     User @relation(fields: [mechanicId], references: [id])
+  guestId      String?              @db.ObjectId // Add guestId for guest checkout
+  guest        Guest?               @relation(fields: [guestId], references: [id], name: "GuestInvoices")
   serviceType  String
   servicePrice Float
   date         DateTime             @default(now())
@@ -513,7 +515,8 @@ model Booking {
 
   companyId   String   @db.ObjectId
   company     Company  @relation(fields: [companyId], references: [id])
-  
+  guestId     String?  @db.ObjectId // Add guestId for guest checkout
+  guest       Guest?   @relation("GuestBookings", fields: [guestId], references: [id])
   service     String
   amount      Float
   estimateId  String   @unique
@@ -564,5 +567,17 @@ model Contact {
   phone     String
   message   String
   createdAt DateTime @default(now())
+}
+
+model Guest {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  firstName   String
+  lastName    String
+  email       String
+  phone       String?
+  createdAt   DateTime @default(now())
+  invoices    Invoice[] @relation("GuestInvoices")
+  bookings    Booking[] @relation("GuestBookings")
+  @@map("guests")
 }
 
