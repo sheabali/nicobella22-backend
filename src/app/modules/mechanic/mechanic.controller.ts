@@ -73,6 +73,12 @@ const createWorkingDays = catchAsync(async (req: Request, res: Response) => {
 
 // Step 5: Sign-Up Completion
 const signUpComplete = catchAsync(async (req: Request, res: Response) => {
+  if (req.file) {
+    req.body.image = `/uploads/${req.file.filename}`;
+  }
+
+  console.log("Sign-up data:", req.body);
+
   const result = await MechanicServices.signUpComplete({
     ...req.body,
   });

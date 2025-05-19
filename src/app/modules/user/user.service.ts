@@ -8,6 +8,7 @@ import { createToken } from "../auth/auth.utils";
 import { hashPassword } from "./user.utils";
 
 const createUserIntoDB = async (payload: User) => {
+  console.log("Creating user with payload:", payload);
   const isUserExist = await prisma.user.findUnique({
     where: { email: payload.email },
   });
@@ -32,7 +33,7 @@ const createUserIntoDB = async (payload: User) => {
     firstName: payload.firstName,
     lastName: payload.lastName,
     email: payload.email,
-    profilePic: payload.profilePic,
+    profilePic: payload.image || "",
     role: UserRole.USER,
     isActive: false,
   };
@@ -60,7 +61,7 @@ const getAllUserFromDB = async () => {
       firstName: true,
       lastName: true,
       email: true,
-      profilePic: true,
+      image: true,
       role: true,
       createdAt: true,
       updatedAt: true,
@@ -108,8 +109,8 @@ const updateUserIntoDB = async (userId: string, payload: Partial<User>) => {
     throw new ApiError(status.NOT_FOUND, "User not found!");
   }
 
-  if (!payload.profilePic) {
-    payload.profilePic = isUserExist.profilePic;
+  if (!payload.image) {
+    payload.image = isUserExist.image;
   }
 
   const updatedUser = await prisma.user.update({
@@ -120,7 +121,7 @@ const updateUserIntoDB = async (userId: string, payload: Partial<User>) => {
       firstName: true,
       lastName: true,
       email: true,
-      profilePic: true,
+      image: true,
       role: true,
       isActive: true,
       createdAt: true,

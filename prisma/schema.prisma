@@ -331,7 +331,7 @@ model User {
   lastName      String
   email         String                @unique
   password      String
-  profilePic    String?               @default("")
+  image    String?               @default("")
   isActive      Boolean               @default(true)
   role          UserRole              @default(USER)
   warning       String?

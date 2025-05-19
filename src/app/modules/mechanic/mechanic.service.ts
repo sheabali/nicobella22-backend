@@ -256,6 +256,9 @@ const signUpComplete = async (
   payload: Partial<User> & { mechanicId: string }
 ) => {
   try {
+    // Log payload for debugging
+    console.log("Sign-up payload:", payload);
+
     // Validate required fields
     const requiredFields: (keyof User)[] = [
       "firstName",
@@ -279,7 +282,6 @@ const signUpComplete = async (
       include: {
         companies: true,
         workingDays: true,
-        // ServicePricing: true,
       },
     });
 
@@ -298,10 +300,6 @@ const signUpComplete = async (
       throw new ApiError(StatusCodes.BAD_REQUEST, "Working days are missing");
     }
 
-    // if (!mechanic.ServicePricing.length) {
-    //   throw new ApiError(StatusCodes.BAD_REQUEST, 'Service pricing is missing');
-    // }
-
     // Check if user already exists
     const isUserExist = await prisma.user.findUnique({
       where: { email: payload.email },
@@ -314,36 +312,41 @@ const signUpComplete = async (
     // Hash password
     const hashedPassword = await hashPassword(payload.password!);
 
-    // Create User entry
+    // Destructure to exclude image and mechanicId from being accidentally spread
+    const { image, mechanicId, password, ...rest } = payload;
+
+    // Prepare user data with required fields asserted as non-undefined
     const userData = {
       firstName: payload.firstName!,
       lastName: payload.lastName!,
       email: payload.email!,
-      profilePic: payload.profilePic ?? "",
+      image: image ?? "",
       password: hashedPassword,
       isActive: true,
       role: UserRole.MECHANIC,
+      // Add any other fields from rest if needed, but required fields must be non-undefined
     };
 
+    // Create new user
     const newUser = await prisma.user.create({
       data: userData,
     });
 
     // Link User to MechanicRegistration
     await prisma.mechanicRegistration.update({
-      where: { id: payload.mechanicId },
+      where: { id: mechanicId },
       data: { users: { connect: { id: newUser.id } } },
     });
 
     // Generate JWT token
     const jwtPayload = {
-      id: payload.id,
-      firstName: payload.firstName!,
-      lastName: payload.lastName!,
-      email: payload.email!,
-      profilePic: payload.profilePic ?? "",
-      role: UserRole.MECHANIC,
-      isActive: true,
+      id: newUser.id,
+      firstName: newUser.firstName,
+      lastName: newUser.lastName,
+      email: newUser.email,
+      profilePic: newUser.image,
+      role: newUser.role,
+      isActive: newUser.isActive,
     };
 
     const accessToken = createToken(
@@ -352,15 +355,12 @@ const signUpComplete = async (
       config.jwtAccessExpiresIn as string
     );
 
-    // Optionally send email (uncomment if needed)
-    // const confirmLink = `${config.backendUrl}/auth/active/${accessToken}`;
-    // await sendEmail(payload.email, undefined, confirmLink);
-
     return {
       accessToken,
       user: newUser,
     };
   } catch (error: any) {
+    console.error("Sign-up complete error:", error); // 🔍 real error log
     if (error instanceof ApiError) {
       throw error;
     }

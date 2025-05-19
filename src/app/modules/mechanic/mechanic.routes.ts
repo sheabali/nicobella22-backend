@@ -1,33 +1,33 @@
-import { Router } from 'express';
-import validateRequest from '../../middlewares/validateRequest';
+import { NextFunction, Request, Response, Router } from "express";
+import validateRequest from "../../middlewares/validateRequest";
+import { upload } from "../../utils/upload";
+import { UserValidation } from "../user/user.validation";
+import { MechanicController } from "./mechanic.controller";
 import {
-  mechanicRegistrationSchema,
   // workingDaysValidationSchema,
   companyValidationSchema,
-  servicePricingValidationSchema,
-} from './mechanic.validation';
-import { MechanicController } from './mechanic.controller';
-import { UserValidation } from '../user/user.validation';
+  mechanicRegistrationSchema,
+} from "./mechanic.validation";
 
 const router = Router();
 
 // Step 1: Mechanic Registration (Personal Information)
 router.post(
-  '/',
+  "/",
   validateRequest(mechanicRegistrationSchema),
   MechanicController.mechanicRegistration
 );
 
 // Step 2: Add Company Information
 router.post(
-  '/company',
+  "/company",
   validateRequest(companyValidationSchema),
   MechanicController.addCompany
 );
 
 // Step 3: Add Working Days (Handle multiple days)
 router.post(
-  '/working-days',
+  "/working-days",
   // validateRequest(workingDaysValidationSchema),
   MechanicController.createWorkingDays
 );
@@ -41,7 +41,12 @@ router.post(
 
 // Step 5: Sign-Up Completion
 router.post(
-  '/sign-up-complete',
+  "/sign-up-complete",
+  upload.single("file"),
+  (req: Request, res: Response, next: NextFunction) => {
+    req.body = JSON.parse(req.body.data);
+    next();
+  },
   validateRequest(UserValidation.createUserValidationSchema),
   MechanicController.signUpComplete
 );
