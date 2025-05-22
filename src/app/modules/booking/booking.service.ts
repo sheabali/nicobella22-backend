@@ -5,6 +5,7 @@ import prisma from "../../utils/prisma";
 
 import { StatusCodes } from "http-status-codes";
 import { z } from "zod";
+import QueryBuilder from "../../builder/QueryBuilder";
 import { IJwtPayload } from "../../types/auth.type";
 import { UserRole } from "../../types/user.type";
 
@@ -221,7 +222,44 @@ const getAllBooking = async (
   }
 };
 
+const RejectEstimates = async (
+  query: Record<string, any>,
+  authUser: { id: string; role: string }
+) => {
+  const filters: Prisma.EstimateWhereInput = {
+    status: "REJECTED", // filter for rejected only
+  };
+
+  // Apply role-based filtering
+  if (authUser.role === "USER") {
+    filters.userId = authUser.id;
+  } else if (authUser.role === "MECHANIC") {
+    filters.mechanicId = authUser.id;
+  }
+
+  const builder = new QueryBuilder(prisma.booking, query);
+
+  const rejectedEstimates = await builder
+    .filter()
+    .rawFilter(filters)
+    .sort()
+    .paginate()
+    .include({
+      user: true,
+      mechanic: true,
+    })
+    .execute();
+
+  const meta = await builder.countTotal();
+
+  return {
+    meta,
+    data: rejectedEstimates,
+  };
+};
+
 export const BookingServices = {
   getAllBooking,
   bookingService,
+  RejectEstimates,
 };

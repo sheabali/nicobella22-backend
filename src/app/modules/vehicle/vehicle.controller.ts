@@ -25,6 +25,8 @@ const createVehicle = catchAsync(async (req: Request, res: Response) => {
     req.body.image = `/uploads/${req.file.filename}`;
   }
 
+  console.log("req.file", req.file);
+
   console.log("aa", req.body);
   const result = await VehicleService.createVehicle(
     req.body,

@@ -33,9 +33,25 @@ const getAllBooking = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+export const getRejectedEstimatesController = catchAsync(
+  async (req: Request, res: Response) => {
+    const authUser = req.user as IJwtPayload;
+
+    const result = await BookingServices.RejectEstimates(req.query, authUser);
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      message: "Rejected estimates retrieved successfully",
+      success: true,
+      data: result,
+    });
+  }
+);
+
 export const BookingController = {
   createBooking,
   getAllBooking,
+  getRejectedEstimatesController,
 };
 
 // const getSingleMeal = async (

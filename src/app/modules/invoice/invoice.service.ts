@@ -1,4 +1,5 @@
 import { Invoice } from "@prisma/client";
+import QueryBuilder from "../../builder/QueryBuilder";
 import { IJwtPayload } from "../../types/auth.type";
 import prisma from "../../utils/prisma";
 
@@ -37,21 +38,35 @@ const createInvoice = async (
   return invoice;
 };
 
-const getAllInvoice = async (authUser: IJwtPayload) => {
+const getAllInvoice = async (query: any, authUser: IJwtPayload) => {
   try {
-    const invoices = await prisma.invoice.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-      include: {
+    const builder = new QueryBuilder(prisma.invoice, query);
+
+    const invoices = await builder
+      .search([
+        "estimate.estimateId",
+        "user.firstName",
+        "user.lastName",
+        "mechanic.firstName",
+        "mechanic.lastName",
+      ])
+      .filter()
+      .sort()
+      .paginate()
+      .include({
         // user: true,
         // mechanic: true,
-      },
-    });
+        // estimate: true, // if needed
+        // company: true, // if needed
+      })
+      .execute();
+
+    const meta = await builder.countTotal();
 
     return {
       success: true,
       data: invoices,
+      meta,
     };
   } catch (error) {
     return {

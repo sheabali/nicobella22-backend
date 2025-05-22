@@ -22,11 +22,14 @@ const createInvoiceController = catchAsync(
 );
 const getAllInvoiceController = catchAsync(
   async (req: Request, res: Response) => {
-    const result = await InvoiceService.getAllInvoice(req.user as IJwtPayload);
+    const result = await InvoiceService.getAllInvoice(
+      req.query, // Pass query params
+      req.user as IJwtPayload // Pass authenticated user
+    );
 
     sendResponse(res, {
-      statusCode: StatusCodes.CREATED,
-      message: "Invoice are retrieved successfully",
+      statusCode: StatusCodes.OK, // Use 200 OK for retrieval
+      message: "Invoices retrieved successfully",
       success: true,
       data: result,
     });

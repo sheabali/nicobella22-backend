@@ -44,8 +44,8 @@ export const createEstimate = async (
   }
 
   // Optional: check if mechanic exists
-  const mechanic = await prisma.mechanicRegistration.findUnique({
-    where: { id: payload.mechanicId },
+  const mechanic = await prisma.user.findUnique({
+    where: { id: payload.mechanicId ?? undefined },
   });
 
   if (!mechanic) {
@@ -129,5 +129,6 @@ const updateEstimateStatus = async (estimateId: string, status: Status) => {
 export const EstimateService = {
   createEstimate,
   getAllEstimate,
+
   updateEstimateStatus,
 };
