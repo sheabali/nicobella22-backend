@@ -303,8 +303,8 @@
 //   updatedAt    DateTime             @updatedAt
 
 //   @@map("invoices")
-// }
-generator client {
+// }generator client {
+ generator client {
   provider = "prisma-client-js"
 }
 
