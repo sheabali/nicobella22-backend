@@ -16,11 +16,31 @@ router.get(
   auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
   EstimateController.getAllEstimateController
 );
+router.get(
+  "/total-estimates",
+  auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
+  EstimateController.totalEstimatesController
+);
+router.get(
+  "/total-estimates-accepted",
+  auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
+  EstimateController.totalEstimatesAcceptedController
+);
+router.get(
+  "/upcoming-appointments",
+  auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
+  EstimateController.upcomingAppointmentsController
+);
 
 router.patch(
   "/:estimateId",
+  auth(UserRole.MECHANIC),
+  EstimateController.rejectEstimateController
+);
+router.put(
+  "/:estimateId",
   auth(UserRole.MECHANIC), // make sure this middleware sets req.user
-  EstimateController.updateEstimateController
+  EstimateController.acceptEstimateController
 );
 
 export const EstimateRoutes = router;

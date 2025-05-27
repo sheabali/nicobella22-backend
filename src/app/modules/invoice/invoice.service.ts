@@ -54,7 +54,7 @@ const getAllInvoice = async (query: any, authUser: IJwtPayload) => {
       .sort()
       .paginate()
       .include({
-        // user: true,
+        user: true,
         // mechanic: true,
         // estimate: true, // if needed
         // company: true, // if needed
@@ -79,7 +79,41 @@ const getAllInvoice = async (query: any, authUser: IJwtPayload) => {
   }
 };
 
+const getAllInvoiceRechartData = async (authUser: IJwtPayload) => {
+  try {
+    const invoices = await prisma.invoice.findMany({
+      where: {
+        mechanicId: authUser.id, // Assuming you want to filter by the authenticated user
+      },
+      include: {
+        user: true,
+        // Uncomment the following as needed
+        // mechanic: true,
+        // estimate: true,
+        // company: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+
+    return {
+      success: true,
+      data: invoices,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "An error occurred while fetching invoices.",
+    };
+  }
+};
+
 export const InvoiceService = {
   createInvoice,
   getAllInvoice,
+  getAllInvoiceRechartData,
 };

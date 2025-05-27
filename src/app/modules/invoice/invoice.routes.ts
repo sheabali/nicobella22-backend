@@ -19,5 +19,10 @@ router.get(
   auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
   InvoiceController.getAllInvoiceController
 );
+router.get(
+  "/invoice-rechart-data",
+  auth(UserRole.ADMIN, UserRole.MECHANIC, UserRole.USER),
+  InvoiceController.getAllInvoiceRechartData
+);
 
 export const InvoiceRoutes = router;

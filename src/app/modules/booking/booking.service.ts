@@ -46,7 +46,7 @@ const bookingService = async (
     console.log("booking payload", payload);
 
     // Validate userId
-    if (!ObjectId.isValid(userId)) {
+    if (!userId || !ObjectId.isValid(userId)) {
       throw new ApiError(
         400,
         "Invalid user ID format. Must be a 24-character hexadecimal string."
@@ -60,7 +60,7 @@ const bookingService = async (
     }
 
     // Validate mechanicId
-    if (!ObjectId.isValid(mechanicId)) {
+    if (!mechanicId || !ObjectId.isValid(mechanicId)) {
       throw new ApiError(
         400,
         "Invalid mechanic ID format. Must be a 24-character hexadecimal string."
@@ -74,7 +74,7 @@ const bookingService = async (
     }
 
     // Validate companyId
-    if (!ObjectId.isValid(companyId)) {
+    if (!companyId || !ObjectId.isValid(companyId)) {
       throw new ApiError(
         400,
         "Invalid company ID format. Must be a 24-character hexadecimal string."
@@ -144,7 +144,7 @@ const getAllBooking = async (
   query: Record<string, unknown>,
   authUser: { id: string; role: string; mechanicId?: string; email: string }
 ) => {
-  console.log("authUser", authUser.id);
+  console.log("authUser", authUser);
 
   try {
     // Validate email
@@ -156,6 +156,8 @@ const getAllBooking = async (
     const user = await prisma.user.findUnique({
       where: { email: authUser.email },
     });
+
+    console.log(user);
 
     if (!user) {
       throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
@@ -182,23 +184,28 @@ const getAllBooking = async (
           "Mechanic ID is required for mechanic role"
         );
       }
-      whereClause.mechanicId = authUser.mechanicId;
+      whereClause.mechanicId = user.mechanicId;
     }
-    // If Admin: whereClause remains empty => all bookings
 
-    const bookings = await prisma.booking.findMany({
-      where: whereClause,
-      include: {
+    const builder = new QueryBuilder(prisma.booking, query);
+
+    const bookings = await builder
+      .rawFilter(whereClause)
+      .search(["status", "note"]) // adjust searchable fields as needed
+      .filter()
+      .sort()
+      .paginate()
+      .include({
         user: true,
         mechanic: true,
         company: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+      })
+      .execute();
 
-    return { bookings };
+    const meta = await builder.countTotal();
+    console.log("Bookings retrieved:", meta);
+
+    return { bookings, meta };
   } catch (error: any) {
     if (error instanceof ApiError) {
       throw error;

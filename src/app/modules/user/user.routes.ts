@@ -10,6 +10,12 @@ const router = Router();
 
 router.get("/", UserController.getAllUser);
 
+router.get(
+  "/me",
+  auth(UserRole.USER, UserRole.ADMIN, UserRole.MECHANIC),
+  UserController.getMe
+);
+
 router.post(
   "/register",
   // validateRequest(UserValidation.createUserValidationSchema),

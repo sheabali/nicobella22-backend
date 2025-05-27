@@ -35,8 +35,23 @@ const getAllInvoiceController = catchAsync(
     });
   }
 );
+const getAllInvoiceRechartData = catchAsync(
+  async (req: Request, res: Response) => {
+    const result = await InvoiceService.getAllInvoiceRechartData(
+      req.user as IJwtPayload // Pass authenticated user
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK, // Use 200 OK for retrieval
+      message: "Rechart Data retrieved successfully",
+      success: true,
+      data: result,
+    });
+  }
+);
 
 export const InvoiceController = {
   createInvoiceController,
   getAllInvoiceController,
+  getAllInvoiceRechartData,
 };

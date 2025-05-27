@@ -75,6 +75,29 @@ const getAllUserFromDB = async () => {
   return result;
 };
 
+const getUserFromDB = async (userId: string) => {
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: {
+      id: true,
+      firstName: true,
+      lastName: true,
+      email: true,
+      image: true,
+      role: true,
+      isActive: true,
+      createdAt: true,
+      updatedAt: true,
+    },
+  });
+
+  if (!user) {
+    throw new ApiError(status.NOT_FOUND, "User not found!");
+  }
+
+  return user;
+};
+
 const activeAccount = async (token: string) => {
   const decodedToken = verifyToken(token);
 
@@ -155,4 +178,5 @@ export const UserService = {
   getAllUserFromDB,
   updateUserIntoDB,
   deleteUserFromDB,
+  getUserFromDB,
 };

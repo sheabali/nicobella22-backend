@@ -39,6 +39,19 @@ const getAllUser = catchAsync(async (req, res) => {
   });
 });
 
+const getMe = catchAsync(async (req, res) => {
+  const user = req.user as IJwtPayload;
+
+  const result = await UserService.getUserFromDB(user.id);
+
+  sendResponse(res, {
+    statusCode: status.OK,
+    success: true,
+    message: "User retrieved successfully!",
+    data: result,
+  });
+});
+
 const updateUser = catchAsync(async (req, res) => {
   if (req.file) {
     req.body.image = `/uploads/${req.file.filename}`;
@@ -71,6 +84,7 @@ const deleteUser = catchAsync(async (req, res) => {
 export const UserController = {
   createUser,
   getAllUser,
+  getMe,
   updateUser,
   deleteUser,
 };

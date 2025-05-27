@@ -35,6 +35,7 @@ const loginUser = async (email: string, password: string) => {
   const user = await prisma.user.findUnique({
     where: { email },
   });
+  console.log("user", user);
 
   if (!user) {
     throw new ApiError(status.NOT_FOUND, "User not found!");
@@ -55,7 +56,7 @@ const loginUser = async (email: string, password: string) => {
     id: user.id,
     lastName: user.lastName,
     email: user.email,
-    profilePic: user.image || "",
+    image: user.image || "",
     role: user.role,
     isActive: user.isActive,
   };
