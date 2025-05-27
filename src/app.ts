@@ -10,7 +10,15 @@ const app: Application = express();
 // parsers
 app.use(express.json());
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
-app.use(cors({ origin: ["http://localhost:6010"], credentials: true }));
+app.use(
+  cors({
+    origin: [
+      "http://localhost:2021",
+      "https://nicobella22-front-end.vercel.app",
+    ],
+    credentials: true,
+  })
+);
 
 // app routes
 app.use("/api/v1", router);
