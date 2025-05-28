@@ -6,6 +6,11 @@ import { AccountController } from "./account.controller";
 const router = Router();
 
 router.get("/mechanic", auth(UserRole.ADMIN), AccountController.getAllMechanic);
+router.get(
+  "/mechanics",
+  auth(UserRole.ADMIN),
+  AccountController.getAllMechanics
+);
 router.get("/user", auth(UserRole.ADMIN), AccountController.getAllUser);
 
 router.patch(
@@ -80,6 +85,11 @@ router.get(
   "/total-revenue",
   auth(UserRole.ADMIN),
   AccountController.totalRevenue
+);
+router.get(
+  "/company/:mechanicId",
+  auth(UserRole.ADMIN),
+  AccountController.getSingleCompanyWithMechanicId
 );
 
 // router.post("need-help", auth(UserRole.USER), AccountController.needHelp);

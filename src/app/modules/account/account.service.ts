@@ -42,6 +42,66 @@ const getAllMechanic = async (query: unknown, authUser: IJwtPayload) => {
   }
 };
 
+const getAllMechanics = async (query: unknown, authUser: IJwtPayload) => {
+  try {
+    if (authUser.role !== "ADMIN") {
+      throw new Error("Unauthorized: Only admin can view all mechanics.");
+    }
+
+    const builder = new QueryBuilder(
+      prisma.user,
+      query as Record<string, unknown>
+    );
+
+    const mechanics = await builder
+      .rawFilter({ role: "MECHANIC" })
+      .search(["firstName", "lastName", "email"])
+      .filter()
+      .sort()
+      .paginate()
+      .fields()
+      .execute();
+
+    const meta = await builder.countTotal();
+
+    // Add service count & revenue to each mechanic
+    const mechanicWithStats = await Promise.all(
+      mechanics.map(async (mechanic: { mechanicId: string }) => {
+        const services = await prisma.booking.findMany({
+          where: {
+            mechanicId: mechanic.mechanicId,
+            status: "ACCEPT", // only completed services
+          },
+          select: {
+            amount: true,
+          },
+        });
+        console.log("services", services);
+
+        const servicesCompleted = services.length;
+        const totalRevenue = services.reduce((acc, s) => acc + s.amount, 0);
+
+        return {
+          ...mechanic,
+          servicesCompleted,
+          totalRevenue,
+        };
+      })
+    );
+
+    return {
+      success: true,
+      data: mechanicWithStats,
+      meta,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "An error occurred.",
+    };
+  }
+};
+
 export const countActiveMechanics = async (authUser: IJwtPayload) => {
   try {
     // Define filter for active mechanics
@@ -499,6 +559,50 @@ const totalRevenue = async (authUser: IJwtPayload) => {
   }
 };
 
+const getSingleCompanyWithMechanicId = async (
+  mechanicId: string,
+  authUser: IJwtPayload
+) => {
+  console.log("mechanicId", mechanicId);
+  try {
+    // Verify that the user exists
+    const user = await prisma.user.findUnique({
+      where: { email: authUser.email },
+    });
+
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "Authenticated user not found");
+    }
+
+    // Find company record(s) for this mechanicId
+    const companies = await prisma.company.findMany({
+      where: {
+        mechanicId: mechanicId,
+      },
+    });
+
+    if (companies.length === 0) {
+      throw new ApiError(
+        StatusCodes.NOT_FOUND,
+        "No companies found for this mechanic"
+      );
+    }
+
+    return {
+      success: true,
+      message: "Company details retrieved successfully.",
+      data: companies,
+    };
+  } catch (error) {
+    console.error("Error fetching company by mechanic ID:", error);
+
+    throw new ApiError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      "Failed to retrieve company information"
+    );
+  }
+};
+
 export const AccountService = {
   getAllMechanic,
   getAllUser,
@@ -515,4 +619,6 @@ export const AccountService = {
   totalBookedService,
   totalServicesBooked,
   totalRevenue,
+  getAllMechanics,
+  getSingleCompanyWithMechanicId,
 };

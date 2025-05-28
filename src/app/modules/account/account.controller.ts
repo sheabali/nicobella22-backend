@@ -18,6 +18,19 @@ const getAllMechanic = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const getAllMechanics = catchAsync(async (req: Request, res: Response) => {
+  const result = await AccountService.getAllMechanics(
+    req.query,
+    req.user as IJwtPayload
+  );
+  console.log("result", result);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Mechanic retrieved successfully",
+    success: true,
+    data: result,
+  });
+});
 const getAllUser = catchAsync(async (req: Request, res: Response) => {
   const result = await AccountService.getAllUser(
     req.query,
@@ -197,6 +210,23 @@ const totalServicesBooked = catchAsync(async (req: Request, res: Response) => {
     data: result, // The bookings array
   });
 });
+const getSingleCompanyWithMechanicId = catchAsync(
+  async (req: Request, res: Response) => {
+    // Call the service with authenticated user
+    const { mechanicId } = req.params;
+    const result = await AccountService.getSingleCompanyWithMechanicId(
+      mechanicId,
+      req.user as IJwtPayload
+    );
+
+    sendResponse(res, {
+      statusCode: StatusCodes.OK,
+      message: "Company With Mechanic retrieved successfully",
+      success: true,
+      data: result,
+    });
+  }
+);
 const totalRevenue = catchAsync(async (req: Request, res: Response) => {
   // Call the service with authenticated user
   const result = await AccountService.totalRevenue(req.user as IJwtPayload);
@@ -225,4 +255,6 @@ export const AccountController = {
   totalBookedService,
   totalServicesBooked,
   totalRevenue,
+  getAllMechanics,
+  getSingleCompanyWithMechanicId,
 };
