@@ -130,6 +130,7 @@ const acceptEstimateStatus = async (estimateId: string) => {
         status: "ACCEPT",
       },
     });
+    console.log("updatedBooking", updatedBooking);
 
     return updatedBooking;
   } catch (error: any) {
@@ -269,9 +270,6 @@ export const upcomingAppointments = async (authUser: IJwtPayload) => {
 
   const filters: any = {
     status: "PENDING",
-    date: {
-      gte: today,
-    },
   };
 
   if (authUser.role === "USER") {

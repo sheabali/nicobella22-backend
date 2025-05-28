@@ -3,6 +3,7 @@ import { StatusCodes } from "http-status-codes";
 import QueryBuilder from "../../builder/QueryBuilder";
 import ApiError from "../../errors/ApiError";
 import { IJwtPayload } from "../../types/auth.type";
+import { UserRole } from "../../types/user.type";
 import prisma from "../../utils/prisma";
 
 const getAllMechanic = async (query: unknown, authUser: IJwtPayload) => {
@@ -41,6 +42,32 @@ const getAllMechanic = async (query: unknown, authUser: IJwtPayload) => {
   }
 };
 
+export const countActiveMechanics = async (authUser: IJwtPayload) => {
+  try {
+    // Define filter for active mechanics
+    const filters = {
+      role: UserRole.MECHANIC,
+      isActive: true,
+    };
+
+    // Count matching mechanics
+    const total = await prisma.user.count({
+      where: filters,
+    });
+
+    // Log the count along with the requesting user's ID
+    console.log("Total active mechanics for user:", authUser.id, "is", total);
+
+    // Return the result
+    return { total };
+  } catch (error) {
+    console.error("Failed to count active mechanics:", error);
+    throw new ApiError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      "Could not count active mechanics"
+    );
+  }
+};
 const getAllUser = async (query: unknown, authUser: IJwtPayload) => {
   try {
     // Only allow ADMINs to view all users
@@ -395,6 +422,83 @@ const appointmentStatus = async (
   };
 };
 
+export const totalBookedService = async (authUser: IJwtPayload) => {
+  try {
+    // Fetch all service pricing entries
+    const services = await prisma.servicePricing.count({
+      where: { isActive: false },
+    });
+
+    return {
+      success: true,
+      message: "All services fetched successfully.",
+      data: services,
+    };
+  } catch (error) {
+    console.error("Failed to fetch services:", error);
+
+    throw new ApiError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      "Could not fetch service list"
+    );
+  }
+};
+
+const totalServicesBooked = async (authUser: IJwtPayload) => {
+  // Fetch user by email
+  const user = await prisma.user.findUnique({
+    where: { email: authUser.email },
+  });
+
+  if (!user) {
+    throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+  }
+
+  // Count bookings for this user
+  const totalBooked = await prisma.booking.count();
+
+  console.log(`Total services booked by user ${user.id}:`, totalBooked);
+
+  return {
+    success: true,
+    message: "Total booked services fetched successfully.",
+    data: { totalBooked },
+  };
+};
+
+const totalRevenue = async (authUser: IJwtPayload) => {
+  try {
+    // Fetch user by email
+    const user = await prisma.user.findUnique({
+      where: { email: authUser.email },
+    });
+
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+    }
+
+    // Sum up revenue from completed bookings associated with the user
+    const result = await prisma.invoice.findMany({
+      where: {
+        status: "ACCEPT",
+      },
+    });
+
+    return {
+      success: true,
+      message: "Total revenue calculated successfully.",
+      data: result,
+    };
+  } catch (error) {
+    console.error("Failed to calculate total revenue:", error);
+
+    throw new ApiError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      "Could not calculate total revenue"
+    );
+  }
+};
+
 export const AccountService = {
   getAllMechanic,
   getAllUser,
@@ -407,4 +511,8 @@ export const AccountService = {
   deactivateCustomer,
   appointmentService,
   appointmentStatus,
+  countActiveMechanics,
+  totalBookedService,
+  totalServicesBooked,
+  totalRevenue,
 };

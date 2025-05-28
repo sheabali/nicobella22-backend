@@ -58,6 +58,30 @@ router.patch(
   AccountController.appointmentStatusController
 );
 
+router.get(
+  "/a-mechanic",
+  auth(UserRole.ADMIN),
+  AccountController.getAllActiveMechanic
+);
+
+router.get(
+  "/total-service",
+  auth(UserRole.ADMIN),
+  AccountController.totalBookedService
+);
+
+router.get(
+  "/total-services-booked",
+  auth(UserRole.ADMIN),
+  AccountController.totalServicesBooked
+);
+
+router.get(
+  "/total-revenue",
+  auth(UserRole.ADMIN),
+  AccountController.totalRevenue
+);
+
 // router.post("need-help", auth(UserRole.USER), AccountController.needHelp);
 
 export const AccountRoutes = router;

@@ -159,6 +159,56 @@ const appointmentStatusController = catchAsync(
   }
 );
 
+const getAllActiveMechanic = catchAsync(async (req, res) => {
+  const result = await AccountService.countActiveMechanics(
+    req.user as IJwtPayload
+  );
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Active Mechanic retrieved successfully!",
+    data: result,
+  });
+});
+const totalBookedService = catchAsync(async (req, res) => {
+  const result = await AccountService.totalBookedService(
+    req.user as IJwtPayload
+  );
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    success: true,
+    message: "Total Service retrieved successfully!",
+    data: result,
+  });
+});
+
+const totalServicesBooked = catchAsync(async (req: Request, res: Response) => {
+  // Call the service with authenticated user
+  const result = await AccountService.totalServicesBooked(
+    req.user as IJwtPayload
+  );
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Total Booked retrieved successfully",
+    success: true,
+    data: result, // The bookings array
+  });
+});
+const totalRevenue = catchAsync(async (req: Request, res: Response) => {
+  // Call the service with authenticated user
+  const result = await AccountService.totalRevenue(req.user as IJwtPayload);
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Total Revenue retrieved successfully",
+    success: true,
+    data: result,
+  });
+});
+
 export const AccountController = {
   getAllMechanic,
   getAllUser,
@@ -171,4 +221,8 @@ export const AccountController = {
   deactivateCustomer,
   appointmentController,
   appointmentStatusController,
+  getAllActiveMechanic,
+  totalBookedService,
+  totalServicesBooked,
+  totalRevenue,
 };
