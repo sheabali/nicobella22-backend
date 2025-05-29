@@ -128,7 +128,8 @@ export const countActiveMechanics = async (authUser: IJwtPayload) => {
     );
   }
 };
-const getAllUser = async (query: unknown, authUser: IJwtPayload) => {
+
+export const getAllUser = async (query: unknown, authUser: IJwtPayload) => {
   try {
     if (authUser.role !== "ADMIN") {
       throw new Error("Unauthorized: Only admin can view all users.");
@@ -150,7 +151,7 @@ const getAllUser = async (query: unknown, authUser: IJwtPayload) => {
 
     const meta = await builder.countTotal();
 
-    // Add service count & revenue for each user
+    // Add service count & totalSpent for each user
     const usersWithStats = await Promise.all(
       users.map(async (user: { id: string }) => {
         const bookings = await prisma.booking.findMany({
@@ -186,7 +187,6 @@ const getAllUser = async (query: unknown, authUser: IJwtPayload) => {
     };
   }
 };
-
 const deactivateMechanic = async (mechanicId: string) => {
   try {
     // Fetch mechanic by ID
