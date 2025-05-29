@@ -46,9 +46,9 @@ const getAllUser = catchAsync(async (req: Request, res: Response) => {
 });
 const deactivateMechanic = catchAsync(async (req: Request, res: Response) => {
   const { mechanicId } = req.params;
-  const { isActive } = req.body;
-  console.log("status from", isActive);
-  const result = await AccountService.deactivateMechanic(mechanicId, isActive);
+
+  const result = await AccountService.deactivateMechanic(mechanicId);
+  console.log("result", result);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     message: "Mechanic deactivate successfully",
@@ -123,9 +123,9 @@ const deleteCustomer = catchAsync(async (req: Request, res: Response) => {
 
 const deactivateCustomer = catchAsync(async (req: Request, res: Response) => {
   const { customerId } = req.params;
-  const { isActive } = req.body;
-  console.log("status from", isActive);
-  const result = await AccountService.deactivateCustomer(customerId, isActive);
+
+  const result = await AccountService.deactivateCustomer(customerId);
+  console.log(result);
   sendResponse(res, {
     statusCode: StatusCodes.OK,
     message: "Customer deactivate successfully",

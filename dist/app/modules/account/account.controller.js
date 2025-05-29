@@ -27,6 +27,16 @@ const getAllMechanic = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
         data: result,
     });
 }));
+const getAllMechanics = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const result = yield account_service_1.AccountService.getAllMechanics(req.query, req.user);
+    console.log("result", result);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: "Mechanic retrieved successfully",
+        success: true,
+        data: result,
+    });
+}));
 const getAllUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const result = yield account_service_1.AccountService.getAllUser(req.query, req.user);
     console.log("result", result);
@@ -39,9 +49,8 @@ const getAllUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
 }));
 const deactivateMechanic = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { mechanicId } = req.params;
-    const { isActive } = req.body;
-    console.log("status from", isActive);
-    const result = yield account_service_1.AccountService.deactivateMechanic(mechanicId, isActive);
+    const result = yield account_service_1.AccountService.deactivateMechanic(mechanicId);
+    console.log("result", result);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         message: "Mechanic deactivate successfully",
@@ -105,9 +114,8 @@ const deleteCustomer = (0, catchAsync_1.default)((req, res) => __awaiter(void 0,
 }));
 const deactivateCustomer = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { customerId } = req.params;
-    const { isActive } = req.body;
-    console.log("status from", isActive);
-    const result = yield account_service_1.AccountService.deactivateCustomer(customerId, isActive);
+    const result = yield account_service_1.AccountService.deactivateCustomer(customerId);
+    console.log(result);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         message: "Customer deactivate successfully",
@@ -165,6 +173,17 @@ const totalServicesBooked = (0, catchAsync_1.default)((req, res) => __awaiter(vo
         data: result, // The bookings array
     });
 }));
+const getSingleCompanyWithMechanicId = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    // Call the service with authenticated user
+    const { mechanicId } = req.params;
+    const result = yield account_service_1.AccountService.getSingleCompanyWithMechanicId(mechanicId, req.user);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: "Company With Mechanic retrieved successfully",
+        success: true,
+        data: result,
+    });
+}));
 const totalRevenue = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     // Call the service with authenticated user
     const result = yield account_service_1.AccountService.totalRevenue(req.user);
@@ -191,4 +210,6 @@ exports.AccountController = {
     totalBookedService,
     totalServicesBooked,
     totalRevenue,
+    getAllMechanics,
+    getSingleCompanyWithMechanicId,
 };

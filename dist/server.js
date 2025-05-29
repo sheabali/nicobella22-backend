@@ -17,8 +17,8 @@ const config_1 = __importDefault(require("./app/config"));
 let server;
 const main = () => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        server = app_1.default.listen(config_1.default.port, () => {
-            console.log(`🚀 App is listening on port: ${config_1.default.port}`);
+        server = app_1.default.listen(Number(config_1.default.port), "10.0.10.12", () => {
+            console.log(`🚀 App is listening on port: 10.0.10.12`);
         });
     }
     catch (err) {

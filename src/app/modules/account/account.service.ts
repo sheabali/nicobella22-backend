@@ -130,34 +130,54 @@ export const countActiveMechanics = async (authUser: IJwtPayload) => {
 };
 const getAllUser = async (query: unknown, authUser: IJwtPayload) => {
   try {
-    // Only allow ADMINs to view all users
     if (authUser.role !== "ADMIN") {
       throw new Error("Unauthorized: Only admin can view all users.");
     }
 
-    // Fetch users who have role = "USER"
-    const users = await prisma.user.findMany({
-      where: {
-        role: "USER",
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        role: true,
-        isActive: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const builder = new QueryBuilder(
+      prisma.user,
+      query as Record<string, unknown>
+    );
+
+    const users = await builder
+      .rawFilter({ role: "USER" })
+      .search(["firstName", "lastName", "email"])
+      .filter()
+      .sort()
+      .paginate()
+      .fields()
+      .execute();
+
+    const meta = await builder.countTotal();
+
+    // Add service count & revenue for each user
+    const usersWithStats = await Promise.all(
+      users.map(async (user: { id: string }) => {
+        const bookings = await prisma.booking.findMany({
+          where: {
+            userId: user.id,
+            status: "ACCEPT", // Only completed bookings
+          },
+          select: {
+            amount: true,
+          },
+        });
+
+        const servicesCompleted = bookings.length;
+        const totalSpent = bookings.reduce((acc, b) => acc + b.amount, 0);
+
+        return {
+          ...user,
+          servicesCompleted,
+          totalSpent,
+        };
+      })
+    );
 
     return {
       success: true,
-      data: users,
+      data: usersWithStats,
+      meta,
     };
   } catch (error) {
     return {
@@ -167,14 +187,12 @@ const getAllUser = async (query: unknown, authUser: IJwtPayload) => {
   }
 };
 
-const deactivateMechanic = async (mechanicId: string, status: boolean) => {
+const deactivateMechanic = async (mechanicId: string) => {
   try {
     // Fetch mechanic by ID
     const mechanic = await prisma.user.findUnique({
       where: { id: mechanicId },
     });
-
-    console.log("warning", status);
 
     // If not found, throw error early
     if (!mechanic) {
@@ -191,8 +209,9 @@ const deactivateMechanic = async (mechanicId: string, status: boolean) => {
     // Update isActive status
     const updatedMechanic = await prisma.user.update({
       where: { id: mechanicId },
-      data: { isActive: status },
+      data: { isActive: false },
     });
+    console.log(updatedMechanic);
 
     return {
       success: true,
@@ -332,25 +351,30 @@ const deleteService = async (serviceId: string) => {
 };
 
 const deleteCustomer = async (customerId: string) => {
+  console.log("customer id", customerId);
   try {
-    const existingService = await prisma.user.findUnique({
+    const existingUser = await prisma.user.findUnique({
       where: { id: customerId },
     });
 
-    if (!existingService) {
+    if (!existingUser) {
       return {
         success: false,
         message: "User not found.",
       };
     }
 
-    // Delete the service
-    await prisma.user.delete({
+    // Soft delete the user
+    await prisma.user.update({
       where: { id: customerId },
+      data: {
+        isDelete: true, // assuming this field exists in your Prisma model
+      },
     });
 
     return {
       success: true,
+      message: "Customer marked as deleted successfully.",
     };
   } catch (error) {
     return {
@@ -358,19 +382,19 @@ const deleteCustomer = async (customerId: string) => {
       message:
         error instanceof Error
           ? error.message
-          : "An error occurred while deleting the service.",
+          : "An error occurred while deleting the customer.",
     };
   }
 };
 
-const deactivateCustomer = async (customerId: string, status: boolean) => {
+const deactivateCustomer = async (customerId: string) => {
   try {
     // Fetch mechanic by ID
     const customer = await prisma.user.findUnique({
       where: { id: customerId },
     });
 
-    console.log("warning", status);
+    // console.log("warning", status);
 
     // If not found, throw error early
     if (!customer) {
@@ -387,7 +411,7 @@ const deactivateCustomer = async (customerId: string, status: boolean) => {
     // Update isActive status
     const updatedMechanic = await prisma.user.update({
       where: { id: customerId },
-      data: { isActive: status },
+      data: { isActive: false },
     });
 
     return {

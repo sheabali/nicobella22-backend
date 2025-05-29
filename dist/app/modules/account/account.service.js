@@ -48,6 +48,51 @@ const getAllMechanic = (query, authUser) => __awaiter(void 0, void 0, void 0, fu
         };
     }
 });
+const getAllMechanics = (query, authUser) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        if (authUser.role !== "ADMIN") {
+            throw new Error("Unauthorized: Only admin can view all mechanics.");
+        }
+        const builder = new QueryBuilder_1.default(prisma_1.default.user, query);
+        const mechanics = yield builder
+            .rawFilter({ role: "MECHANIC" })
+            .search(["firstName", "lastName", "email"])
+            .filter()
+            .sort()
+            .paginate()
+            .fields()
+            .execute();
+        const meta = yield builder.countTotal();
+        // Add service count & revenue to each mechanic
+        const mechanicWithStats = yield Promise.all(mechanics.map((mechanic) => __awaiter(void 0, void 0, void 0, function* () {
+            const services = yield prisma_1.default.booking.findMany({
+                where: {
+                    mechanicId: mechanic.mechanicId,
+                    status: "ACCEPT", // only completed services
+                },
+                select: {
+                    amount: true,
+                },
+            });
+            console.log("services", services);
+            const servicesCompleted = services.length;
+            const totalRevenue = services.reduce((acc, s) => acc + s.amount, 0);
+            return Object.assign(Object.assign({}, mechanic), { servicesCompleted,
+                totalRevenue });
+        })));
+        return {
+            success: true,
+            data: mechanicWithStats,
+            meta,
+        };
+    }
+    catch (error) {
+        return {
+            success: false,
+            message: error instanceof Error ? error.message : "An error occurred.",
+        };
+    }
+});
 const countActiveMechanics = (authUser) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Define filter for active mechanics
@@ -72,32 +117,39 @@ const countActiveMechanics = (authUser) => __awaiter(void 0, void 0, void 0, fun
 exports.countActiveMechanics = countActiveMechanics;
 const getAllUser = (query, authUser) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        // Only allow ADMINs to view all users
         if (authUser.role !== "ADMIN") {
             throw new Error("Unauthorized: Only admin can view all users.");
         }
-        // Fetch users who have role = "USER"
-        const users = yield prisma_1.default.user.findMany({
-            where: {
-                role: "USER",
-            },
-            orderBy: {
-                createdAt: "desc",
-            },
-            select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-                email: true,
-                role: true,
-                isActive: true,
-                createdAt: true,
-                updatedAt: true,
-            },
-        });
+        const builder = new QueryBuilder_1.default(prisma_1.default.user, query);
+        const users = yield builder
+            .rawFilter({ role: "USER" })
+            .search(["firstName", "lastName", "email"])
+            .filter()
+            .sort()
+            .paginate()
+            .fields()
+            .execute();
+        const meta = yield builder.countTotal();
+        // Add service count & revenue for each user
+        const usersWithStats = yield Promise.all(users.map((user) => __awaiter(void 0, void 0, void 0, function* () {
+            const bookings = yield prisma_1.default.booking.findMany({
+                where: {
+                    userId: user.id,
+                    status: "ACCEPT", // Only completed bookings
+                },
+                select: {
+                    amount: true,
+                },
+            });
+            const servicesCompleted = bookings.length;
+            const totalSpent = bookings.reduce((acc, b) => acc + b.amount, 0);
+            return Object.assign(Object.assign({}, user), { servicesCompleted,
+                totalSpent });
+        })));
         return {
             success: true,
-            data: users,
+            data: usersWithStats,
+            meta,
         };
     }
     catch (error) {
@@ -107,13 +159,12 @@ const getAllUser = (query, authUser) => __awaiter(void 0, void 0, void 0, functi
         };
     }
 });
-const deactivateMechanic = (mechanicId, status) => __awaiter(void 0, void 0, void 0, function* () {
+const deactivateMechanic = (mechanicId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Fetch mechanic by ID
         const mechanic = yield prisma_1.default.user.findUnique({
             where: { id: mechanicId },
         });
-        console.log("warning", status);
         // If not found, throw error early
         if (!mechanic) {
             throw new Error("Mechanic not found.");
@@ -125,8 +176,9 @@ const deactivateMechanic = (mechanicId, status) => __awaiter(void 0, void 0, voi
         // Update isActive status
         const updatedMechanic = yield prisma_1.default.user.update({
             where: { id: mechanicId },
-            data: { isActive: status },
+            data: { isActive: false },
         });
+        console.log(updatedMechanic);
         return {
             success: true,
             data: updatedMechanic,
@@ -248,22 +300,27 @@ const deleteService = (serviceId) => __awaiter(void 0, void 0, void 0, function*
     }
 });
 const deleteCustomer = (customerId) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("customer id", customerId);
     try {
-        const existingService = yield prisma_1.default.user.findUnique({
+        const existingUser = yield prisma_1.default.user.findUnique({
             where: { id: customerId },
         });
-        if (!existingService) {
+        if (!existingUser) {
             return {
                 success: false,
                 message: "User not found.",
             };
         }
-        // Delete the service
-        yield prisma_1.default.user.delete({
+        // Soft delete the user
+        yield prisma_1.default.user.update({
             where: { id: customerId },
+            data: {
+                isDelete: true, // assuming this field exists in your Prisma model
+            },
         });
         return {
             success: true,
+            message: "Customer marked as deleted successfully.",
         };
     }
     catch (error) {
@@ -271,17 +328,17 @@ const deleteCustomer = (customerId) => __awaiter(void 0, void 0, void 0, functio
             success: false,
             message: error instanceof Error
                 ? error.message
-                : "An error occurred while deleting the service.",
+                : "An error occurred while deleting the customer.",
         };
     }
 });
-const deactivateCustomer = (customerId, status) => __awaiter(void 0, void 0, void 0, function* () {
+const deactivateCustomer = (customerId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Fetch mechanic by ID
         const customer = yield prisma_1.default.user.findUnique({
             where: { id: customerId },
         });
-        console.log("warning", status);
+        // console.log("warning", status);
         // If not found, throw error early
         if (!customer) {
             throw new Error("customer not found.");
@@ -293,7 +350,7 @@ const deactivateCustomer = (customerId, status) => __awaiter(void 0, void 0, voi
         // Update isActive status
         const updatedMechanic = yield prisma_1.default.user.update({
             where: { id: customerId },
-            data: { isActive: status },
+            data: { isActive: false },
         });
         return {
             success: true,
@@ -424,6 +481,36 @@ const totalRevenue = (authUser) => __awaiter(void 0, void 0, void 0, function* (
         throw new ApiError_1.default(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR, "Could not calculate total revenue");
     }
 });
+const getSingleCompanyWithMechanicId = (mechanicId, authUser) => __awaiter(void 0, void 0, void 0, function* () {
+    console.log("mechanicId", mechanicId);
+    try {
+        // Verify that the user exists
+        const user = yield prisma_1.default.user.findUnique({
+            where: { email: authUser.email },
+        });
+        if (!user) {
+            throw new ApiError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "Authenticated user not found");
+        }
+        // Find company record(s) for this mechanicId
+        const companies = yield prisma_1.default.company.findMany({
+            where: {
+                mechanicId: mechanicId,
+            },
+        });
+        if (companies.length === 0) {
+            throw new ApiError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "No companies found for this mechanic");
+        }
+        return {
+            success: true,
+            message: "Company details retrieved successfully.",
+            data: companies,
+        };
+    }
+    catch (error) {
+        console.error("Error fetching company by mechanic ID:", error);
+        throw new ApiError_1.default(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR, "Failed to retrieve company information");
+    }
+});
 exports.AccountService = {
     getAllMechanic,
     getAllUser,
@@ -440,4 +527,6 @@ exports.AccountService = {
     totalBookedService: exports.totalBookedService,
     totalServicesBooked,
     totalRevenue,
+    getAllMechanics,
+    getSingleCompanyWithMechanicId,
 };
