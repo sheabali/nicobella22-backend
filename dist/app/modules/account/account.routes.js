@@ -18,6 +18,7 @@ router.get("/service",
 // auth(UserRole.ADMIN),
 account_controller_1.AccountController.getAllServiceController);
 router.patch("/service/:serviceId", (0, auth_1.default)(user_type_1.UserRole.ADMIN), account_controller_1.AccountController.deactivateService);
+router.post("/service/:serviceId", (0, auth_1.default)(user_type_1.UserRole.ADMIN), account_controller_1.AccountController.activeService);
 router.delete("/service/:serviceId", (0, auth_1.default)(user_type_1.UserRole.ADMIN), account_controller_1.AccountController.deleteService);
 router.delete("/customer/:customerId", (0, auth_1.default)(user_type_1.UserRole.ADMIN), account_controller_1.AccountController.deleteCustomer);
 router.patch("/customer/:customerId", (0, auth_1.default)(user_type_1.UserRole.ADMIN), account_controller_1.AccountController.deactivateCustomer);
@@ -28,5 +29,6 @@ router.get("/total-service", (0, auth_1.default)(user_type_1.UserRole.ADMIN), ac
 router.get("/total-services-booked", (0, auth_1.default)(user_type_1.UserRole.ADMIN), account_controller_1.AccountController.totalServicesBooked);
 router.get("/total-revenue", (0, auth_1.default)(user_type_1.UserRole.ADMIN), account_controller_1.AccountController.totalRevenue);
 router.get("/company/:mechanicId", (0, auth_1.default)(user_type_1.UserRole.ADMIN), account_controller_1.AccountController.getSingleCompanyWithMechanicId);
+router.patch("/make-admin", (0, auth_1.default)(user_type_1.UserRole.ADMIN), account_controller_1.AccountController.makeAdmin);
 // router.post("need-help", auth(UserRole.USER), AccountController.needHelp);
 exports.AccountRoutes = router;

@@ -96,6 +96,7 @@ router.get(
   auth(UserRole.ADMIN),
   AccountController.getSingleCompanyWithMechanicId
 );
+router.patch("/make-admin", auth(UserRole.ADMIN), AccountController.makeAdmin);
 
 // router.post("need-help", auth(UserRole.USER), AccountController.needHelp);
 

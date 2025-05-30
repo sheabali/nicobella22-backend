@@ -250,6 +250,18 @@ const totalRevenue = catchAsync(async (req: Request, res: Response) => {
     data: result,
   });
 });
+const makeAdmin = catchAsync(async (req: Request, res: Response) => {
+  const { email } = req.body;
+
+  const result = await AccountService.makeAdmin(email); // promote user to admin
+
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "User has been promoted to admin successfully.",
+    success: true,
+    data: result,
+  });
+});
 
 export const AccountController = {
   getAllMechanic,
@@ -270,4 +282,5 @@ export const AccountController = {
   getAllMechanics,
   getSingleCompanyWithMechanicId,
   activeService,
+  makeAdmin,
 };

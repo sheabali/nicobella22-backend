@@ -366,9 +366,9 @@ const deleteService = async (serviceId: string) => {
     }
 
     // Delete the service
-    await prisma.servicePricing.update({
+    await prisma.servicePricing.delete({
       where: { id: serviceId },
-      data: { isDelete: true },
+      // data: { isDelete: true },
     });
 
     return {
@@ -662,6 +662,38 @@ const getSingleCompanyWithMechanicId = async (
   }
 };
 
+const makeAdmin = async (email: string) => {
+  try {
+    // Fetch user by email
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
+    }
+
+    // Update user's role to ADMIN
+    const updatedUser = await prisma.user.update({
+      where: { email },
+      data: { role: "ADMIN" },
+    });
+
+    return {
+      success: true,
+      message: "User has been promoted to admin successfully.",
+      data: updatedUser,
+    };
+  } catch (error) {
+    console.error("Failed to promote user to admin:", error);
+
+    throw new ApiError(
+      StatusCodes.INTERNAL_SERVER_ERROR,
+      "Could not promote user to admin"
+    );
+  }
+};
+
 export const AccountService = {
   getAllMechanic,
   getAllUser,
@@ -681,4 +713,5 @@ export const AccountService = {
   getAllMechanics,
   getSingleCompanyWithMechanicId,
   activeService,
+  makeAdmin,
 };

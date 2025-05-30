@@ -80,6 +80,18 @@ const getAllServiceController = (0, catchAsync_1.default)((req, res) => __awaite
         data: result,
     });
 }));
+const activeService = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { serviceId } = req.params;
+    const { isActive } = req.body;
+    console.log("status from", isActive);
+    const result = yield account_service_1.AccountService.activeService(serviceId, isActive);
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: "Mechanic active successfully",
+        success: true,
+        data: result,
+    });
+}));
 const deactivateService = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { serviceId } = req.params;
     const { isActive } = req.body;
@@ -194,6 +206,16 @@ const totalRevenue = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, v
         data: result,
     });
 }));
+const makeAdmin = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const { email } = req.body;
+    const result = yield account_service_1.AccountService.makeAdmin(email); // promote user to admin
+    (0, sendResponse_1.default)(res, {
+        statusCode: http_status_codes_1.StatusCodes.OK,
+        message: "User has been promoted to admin successfully.",
+        success: true,
+        data: result,
+    });
+}));
 exports.AccountController = {
     getAllMechanic,
     getAllUser,
@@ -212,4 +234,6 @@ exports.AccountController = {
     totalRevenue,
     getAllMechanics,
     getSingleCompanyWithMechanicId,
+    activeService,
+    makeAdmin,
 };

@@ -27,7 +27,7 @@ const createNeedHelpController = (0, catchAsync_1.default)((req, res) => __await
     });
 }));
 const getAllNeedHelpController = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const result = yield needHelp_Service_1.NeedHelpService.getAllNeedHelp(req.user);
+    const result = yield needHelp_Service_1.NeedHelpService.getAllNeedHelp(req.query, req.user);
     (0, sendResponse_1.default)(res, {
         statusCode: http_status_codes_1.StatusCodes.OK,
         message: "Help request retrieved successfully.",

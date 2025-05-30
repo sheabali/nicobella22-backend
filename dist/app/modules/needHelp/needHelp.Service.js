@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NeedHelpService = void 0;
+const QueryBuilder_1 = __importDefault(require("../../builder/QueryBuilder"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const createNeedHelp = (payload) => __awaiter(void 0, void 0, void 0, function* () {
     try {
@@ -32,21 +33,21 @@ const createNeedHelp = (payload) => __awaiter(void 0, void 0, void 0, function* 
         };
     }
 });
-const getAllNeedHelp = (authUser) => __awaiter(void 0, void 0, void 0, function* () {
-    if (authUser.role !== "ADMIN") {
-        return {
-            success: false,
-            message: "You are not authorized to view this resource.",
-        };
-    }
+const getAllNeedHelp = (query, authUser) => __awaiter(void 0, void 0, void 0, function* () {
     try {
-        const entries = yield prisma_1.default.contact.findMany({
-            orderBy: {
-                createdAt: "desc",
-            },
-        });
+        const queryBuilder = new QueryBuilder_1.default(prisma_1.default.contact, query);
+        const services = yield queryBuilder
+            .search(["serviceName"])
+            .filter()
+            // .include({ mechanic: true })
+            .sort()
+            .paginate()
+            .execute();
+        const meta = yield queryBuilder.countTotal();
         return {
-            data: entries,
+            success: true,
+            data: services,
+            meta,
         };
     }
     catch (error) {
@@ -54,7 +55,7 @@ const getAllNeedHelp = (authUser) => __awaiter(void 0, void 0, void 0, function*
             success: false,
             message: error instanceof Error
                 ? error.message
-                : "An error occurred while fetching help requests.",
+                : "An error occurred while fetching services.",
         };
     }
 });

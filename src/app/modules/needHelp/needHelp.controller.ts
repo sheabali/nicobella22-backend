@@ -21,6 +21,7 @@ const createNeedHelpController = catchAsync(
 const getAllNeedHelpController = catchAsync(
   async (req: Request, res: Response) => {
     const result = await NeedHelpService.getAllNeedHelp(
+      req.query,
       req.user as IJwtPayload
     );
 

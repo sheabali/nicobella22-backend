@@ -1,4 +1,5 @@
 import { Contact } from "@prisma/client";
+import QueryBuilder from "../../builder/QueryBuilder";
 import { IJwtPayload } from "../../types/auth.type";
 import prisma from "../../utils/prisma";
 
@@ -22,23 +23,27 @@ const createNeedHelp = async (payload: Contact) => {
   }
 };
 
-const getAllNeedHelp = async (authUser: IJwtPayload) => {
-  if (authUser.role !== "ADMIN") {
-    return {
-      success: false,
-      message: "You are not authorized to view this resource.",
-    };
-  }
-
+const getAllNeedHelp = async (query: unknown, authUser: IJwtPayload) => {
   try {
-    const entries = await prisma.contact.findMany({
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const queryBuilder = new QueryBuilder(
+      prisma.contact,
+      query as Record<string, unknown>
+    );
+
+    const services = await queryBuilder
+      .search(["serviceName"])
+      .filter()
+      // .include({ mechanic: true })
+      .sort()
+      .paginate()
+      .execute();
+
+    const meta = await queryBuilder.countTotal();
 
     return {
-      data: entries,
+      success: true,
+      data: services,
+      meta,
     };
   } catch (error) {
     return {
@@ -46,7 +51,7 @@ const getAllNeedHelp = async (authUser: IJwtPayload) => {
       message:
         error instanceof Error
           ? error.message
-          : "An error occurred while fetching help requests.",
+          : "An error occurred while fetching services.",
     };
   }
 };

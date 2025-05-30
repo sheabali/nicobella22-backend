@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.AccountService = exports.totalBookedService = exports.countActiveMechanics = void 0;
+exports.AccountService = exports.totalBookedService = exports.getAllUser = exports.countActiveMechanics = void 0;
 const client_1 = require("@prisma/client");
 const http_status_codes_1 = require("http-status-codes");
 const QueryBuilder_1 = __importDefault(require("../../builder/QueryBuilder"));
@@ -130,7 +130,7 @@ const getAllUser = (query, authUser) => __awaiter(void 0, void 0, void 0, functi
             .fields()
             .execute();
         const meta = yield builder.countTotal();
-        // Add service count & revenue for each user
+        // Add service count & totalSpent for each user
         const usersWithStats = yield Promise.all(users.map((user) => __awaiter(void 0, void 0, void 0, function* () {
             const bookings = yield prisma_1.default.booking.findMany({
                 where: {
@@ -159,6 +159,7 @@ const getAllUser = (query, authUser) => __awaiter(void 0, void 0, void 0, functi
         };
     }
 });
+exports.getAllUser = getAllUser;
 const deactivateMechanic = (mechanicId) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         // Fetch mechanic by ID
@@ -220,11 +221,15 @@ const warningMechanic = (mechanicId, warning) => __awaiter(void 0, void 0, void 
 });
 const getAllService = (query, authUser) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        const filterData = prisma_1.default.servicePricing.findMany({
+            where: { isDelete: false },
+        });
+        console.log("filterData", filterData);
         const queryBuilder = new QueryBuilder_1.default(prisma_1.default.servicePricing, query);
         const services = yield queryBuilder
             .search(["serviceName"])
             .filter()
-            .include({ mechanic: true }) // now safely handled
+            .include({ mechanic: true })
             .sort()
             .paginate()
             .execute();
@@ -241,6 +246,33 @@ const getAllService = (query, authUser) => __awaiter(void 0, void 0, void 0, fun
             message: error instanceof Error
                 ? error.message
                 : "An error occurred while fetching services.",
+        };
+    }
+});
+const activeService = (serviceId, status) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Fetch mechanic by ID
+        const service = yield prisma_1.default.servicePricing.findUnique({
+            where: { id: serviceId },
+        });
+        // If not found, throw error early
+        if (!service) {
+            throw new Error("Service not found.");
+        }
+        // Update isActive status
+        const updatedService = yield prisma_1.default.servicePricing.update({
+            where: { id: serviceId },
+            data: { isActive: status },
+        });
+        return {
+            success: true,
+            data: updatedService,
+        };
+    }
+    catch (error) {
+        return {
+            success: false,
+            message: error instanceof Error ? error.message : "An error occurred.",
         };
     }
 });
@@ -285,6 +317,7 @@ const deleteService = (serviceId) => __awaiter(void 0, void 0, void 0, function*
         // Delete the service
         yield prisma_1.default.servicePricing.delete({
             where: { id: serviceId },
+            // data: { isDelete: true },
         });
         return {
             success: true,
@@ -511,9 +544,34 @@ const getSingleCompanyWithMechanicId = (mechanicId, authUser) => __awaiter(void 
         throw new ApiError_1.default(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR, "Failed to retrieve company information");
     }
 });
+const makeAdmin = (email) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        // Fetch user by email
+        const user = yield prisma_1.default.user.findUnique({
+            where: { email },
+        });
+        if (!user) {
+            throw new ApiError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
+        }
+        // Update user's role to ADMIN
+        const updatedUser = yield prisma_1.default.user.update({
+            where: { email },
+            data: { role: "ADMIN" },
+        });
+        return {
+            success: true,
+            message: "User has been promoted to admin successfully.",
+            data: updatedUser,
+        };
+    }
+    catch (error) {
+        console.error("Failed to promote user to admin:", error);
+        throw new ApiError_1.default(http_status_codes_1.StatusCodes.INTERNAL_SERVER_ERROR, "Could not promote user to admin");
+    }
+});
 exports.AccountService = {
     getAllMechanic,
-    getAllUser,
+    getAllUser: exports.getAllUser,
     deactivateMechanic,
     warningMechanic,
     getAllService,
@@ -529,4 +587,6 @@ exports.AccountService = {
     totalRevenue,
     getAllMechanics,
     getSingleCompanyWithMechanicId,
+    activeService,
+    makeAdmin,
 };
