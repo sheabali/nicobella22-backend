@@ -32,7 +32,7 @@ app.use((0, cors_1.default)({
 // app routes
 app.use("/api/v1", routes_1.default);
 const test = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    res.send(`<div style="background: black; border-radius: 15px; width: 700px; height: 200px; margin: auto; margin-top: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;"><h1 style="color: white; text-align: center;">Welcome to the server of Something!</h1></div>`);
+    res.send(`<div style="background: black; border-radius: 15px; width: 700px; height: 200px; margin: auto; margin-top: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;"><h1 style="color: white; text-align: center;">Welcome to the server of Carmauto!</h1></div>`);
 });
 app.get("/", test);
 app.use(globalErrorHandler_1.default);

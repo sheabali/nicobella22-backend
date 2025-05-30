@@ -25,7 +25,7 @@ app.use("/api/v1", router);
 
 const test = async (req: Request, res: Response) => {
   res.send(
-    `<div style="background: black; border-radius: 15px; width: 700px; height: 200px; margin: auto; margin-top: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;"><h1 style="color: white; text-align: center;">Welcome to the server of Something!</h1></div>`
+    `<div style="background: black; border-radius: 15px; width: 700px; height: 200px; margin: auto; margin-top: 50px; display: flex; flex-direction: column; justify-content: center; align-items: center;"><h1 style="color: white; text-align: center;">Welcome to the server of Carmauto!</h1></div>`
   );
 };
 
