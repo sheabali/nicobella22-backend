@@ -85,6 +85,18 @@ const getAllServiceController = catchAsync(
   }
 );
 
+const activeService = catchAsync(async (req: Request, res: Response) => {
+  const { serviceId } = req.params;
+  const { isActive } = req.body;
+  console.log("status from", isActive);
+  const result = await AccountService.activeService(serviceId, isActive);
+  sendResponse(res, {
+    statusCode: StatusCodes.OK,
+    message: "Mechanic active successfully",
+    success: true,
+    data: result,
+  });
+});
 const deactivateService = catchAsync(async (req: Request, res: Response) => {
   const { serviceId } = req.params;
   const { isActive } = req.body;
@@ -257,4 +269,5 @@ export const AccountController = {
   totalRevenue,
   getAllMechanics,
   getSingleCompanyWithMechanicId,
+  activeService,
 };

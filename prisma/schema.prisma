@@ -554,6 +554,7 @@ model ServicePricing {
   serviceName  String
   servicePrice Float                 @default(0.00)
   isActive     Boolean               @default(true)
+  isDelete     Boolean               @default(false)
   createdAt    DateTime              @default(now())
   updatedAt    DateTime              @updatedAt
 

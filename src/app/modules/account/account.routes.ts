@@ -34,6 +34,11 @@ router.patch(
   auth(UserRole.ADMIN),
   AccountController.deactivateService
 );
+router.post(
+  "/service/:serviceId",
+  auth(UserRole.ADMIN),
+  AccountController.activeService
+);
 router.delete(
   "/service/:serviceId",
   auth(UserRole.ADMIN),

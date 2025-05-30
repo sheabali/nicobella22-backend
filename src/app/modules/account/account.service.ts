@@ -257,6 +257,11 @@ const warningMechanic = async (mechanicId: string, warning: string) => {
 
 const getAllService = async (query: unknown, authUser: IJwtPayload) => {
   try {
+    const filterData = prisma.servicePricing.findMany({
+      where: { isDelete: false },
+    });
+    console.log("filterData", filterData);
+
     const queryBuilder = new QueryBuilder(
       prisma.servicePricing,
       query as Record<string, unknown>
@@ -265,7 +270,7 @@ const getAllService = async (query: unknown, authUser: IJwtPayload) => {
     const services = await queryBuilder
       .search(["serviceName"])
       .filter()
-      .include({ mechanic: true }) // now safely handled
+      .include({ mechanic: true })
       .sort()
       .paginate()
       .execute();
@@ -288,6 +293,35 @@ const getAllService = async (query: unknown, authUser: IJwtPayload) => {
   }
 };
 
+const activeService = async (serviceId: string, status: boolean) => {
+  try {
+    // Fetch mechanic by ID
+    const service = await prisma.servicePricing.findUnique({
+      where: { id: serviceId },
+    });
+
+    // If not found, throw error early
+    if (!service) {
+      throw new Error("Service not found.");
+    }
+
+    // Update isActive status
+    const updatedService = await prisma.servicePricing.update({
+      where: { id: serviceId },
+      data: { isActive: status },
+    });
+
+    return {
+      success: true,
+      data: updatedService,
+    };
+  } catch (error) {
+    return {
+      success: false,
+      message: error instanceof Error ? error.message : "An error occurred.",
+    };
+  }
+};
 const deactivateService = async (serviceId: string, status: boolean) => {
   try {
     // Fetch mechanic by ID
@@ -332,8 +366,9 @@ const deleteService = async (serviceId: string) => {
     }
 
     // Delete the service
-    await prisma.servicePricing.delete({
+    await prisma.servicePricing.update({
       where: { id: serviceId },
+      data: { isDelete: true },
     });
 
     return {
@@ -645,4 +680,5 @@ export const AccountService = {
   totalRevenue,
   getAllMechanics,
   getSingleCompanyWithMechanicId,
+  activeService,
 };
