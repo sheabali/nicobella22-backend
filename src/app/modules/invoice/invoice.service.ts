@@ -1,6 +1,9 @@
 import { Invoice } from "@prisma/client";
+import { StatusCodes } from "http-status-codes";
 import QueryBuilder from "../../builder/QueryBuilder";
+import ApiError from "../../errors/ApiError";
 import { IJwtPayload } from "../../types/auth.type";
+import { UserRole } from "../../types/user.type";
 import prisma from "../../utils/prisma";
 
 const createInvoice = async (
@@ -40,9 +43,24 @@ const createInvoice = async (
 
 const getAllInvoice = async (query: any, authUser: IJwtPayload) => {
   try {
+    // Build role-based filter
+    const rawFilter: Record<string, any> = {};
+
+    if (authUser.role === UserRole.USER) {
+      rawFilter.userId = authUser.id;
+    } else if (authUser.role === UserRole.MECHANIC) {
+      if (!authUser.id) {
+        throw new ApiError(StatusCodes.BAD_REQUEST, "Mechanic ID is required");
+      }
+      rawFilter.mechanicId = authUser.id;
+    }
+    // For ADMIN, no filter needed (they see everything)
+
     const builder = new QueryBuilder(prisma.invoice, query);
 
     const invoices = await builder
+      .rawFilter(rawFilter) // apply role-based filter
+      .filter()
       .search([
         "estimate.estimateId",
         "user.firstName",
@@ -50,14 +68,13 @@ const getAllInvoice = async (query: any, authUser: IJwtPayload) => {
         "mechanic.firstName",
         "mechanic.lastName",
       ])
-      .filter()
       .sort()
       .paginate()
       .include({
         user: true,
-        // mechanic: true,
-        // estimate: true, // if needed
-        // company: true, // if needed
+        mechanic: true,
+        // estimate: true,
+        company: true,
       })
       .execute();
 

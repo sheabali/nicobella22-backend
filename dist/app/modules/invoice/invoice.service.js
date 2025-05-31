@@ -13,7 +13,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InvoiceService = void 0;
+const http_status_codes_1 = require("http-status-codes");
 const QueryBuilder_1 = __importDefault(require("../../builder/QueryBuilder"));
+const ApiError_1 = __importDefault(require("../../errors/ApiError"));
+const user_type_1 = require("../../types/user.type");
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const createInvoice = (payload, authUser) => __awaiter(void 0, void 0, void 0, function* () {
     console.log("Authenticated user:", authUser);
@@ -40,8 +43,22 @@ const createInvoice = (payload, authUser) => __awaiter(void 0, void 0, void 0, f
 });
 const getAllInvoice = (query, authUser) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        // Build role-based filter
+        const rawFilter = {};
+        if (authUser.role === user_type_1.UserRole.USER) {
+            rawFilter.userId = authUser.id;
+        }
+        else if (authUser.role === user_type_1.UserRole.MECHANIC) {
+            if (!authUser.id) {
+                throw new ApiError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "Mechanic ID is required");
+            }
+            rawFilter.mechanicId = authUser.id;
+        }
+        // For ADMIN, no filter needed (they see everything)
         const builder = new QueryBuilder_1.default(prisma_1.default.invoice, query);
         const invoices = yield builder
+            .rawFilter(rawFilter) // apply role-based filter
+            .filter()
             .search([
             "estimate.estimateId",
             "user.firstName",
@@ -49,14 +66,13 @@ const getAllInvoice = (query, authUser) => __awaiter(void 0, void 0, void 0, fun
             "mechanic.firstName",
             "mechanic.lastName",
         ])
-            .filter()
             .sort()
             .paginate()
             .include({
             user: true,
-            // mechanic: true,
-            // estimate: true, // if needed
-            // company: true, // if needed
+            mechanic: true,
+            // estimate: true,
+            company: true,
         })
             .execute();
         const meta = yield builder.countTotal();
