@@ -17,17 +17,17 @@ const nodemailer_1 = __importDefault(require("nodemailer"));
 const config_1 = __importDefault(require("../config"));
 const sendEmail = (to, resetPassLink, confirmLink) => __awaiter(void 0, void 0, void 0, function* () {
     const transporter = nodemailer_1.default.createTransport({
-        host: 'smtp.gmail.com',
+        host: "smtp-relay.brevo.com",
         port: 587,
-        secure: config_1.default.NODE_ENV === 'production',
+        secure: false,
         auth: {
-            user: config_1.default.emailSender.email,
-            pass: config_1.default.emailSender.app_pass,
+            user: config_1.default.sendEmail.brevo_email,
+            pass: config_1.default.sendEmail.brevo_pass,
         },
     });
-    const formattedDate = new Intl.DateTimeFormat('en-US', {
-        dateStyle: 'medium',
-        timeStyle: 'short',
+    const formattedDate = new Intl.DateTimeFormat("en-US", {
+        dateStyle: "medium",
+        timeStyle: "short",
     }).format(new Date());
     const clickableLink = `<a href="${confirmLink}" style="color: #121849; text-decoration: underline;">here</a>`;
     const clickableResetPass = `<a href="${resetPassLink}" style="color: #121849; text-decoration: underline;">here</a>`;
@@ -60,10 +60,10 @@ const sendEmail = (to, resetPassLink, confirmLink) => __awaiter(void 0, void 0, 
   </div>
   `;
     yield transporter.sendMail({
-        from: `"Sk Shariful Islam" <${config_1.default.emailSender.email}>`,
+        from: `"Support Team" <${config_1.default.sendEmail.email_from}>`,
         to,
-        subject: `${resetPassLink ? 'Reset Your Password' : 'Active Your Account'}`,
-        text: 'Hello world?',
+        subject: `${resetPassLink ? "Reset Your Password" : "Active Your Account"}`,
+        text: "Hello world?",
         html: html,
     });
 });

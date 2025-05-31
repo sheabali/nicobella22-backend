@@ -18,6 +18,7 @@ const http_status_1 = __importDefault(require("http-status"));
 const config_1 = __importDefault(require("../../config"));
 const ApiError_1 = __importDefault(require("../../errors/ApiError"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
+const sendEmail_1 = require("../../utils/sendEmail");
 const verifyToken_1 = require("../../utils/verifyToken");
 const auth_utils_1 = require("../auth/auth.utils");
 const user_utils_1 = require("./user.utils");
@@ -30,7 +31,7 @@ const createUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function
         throw new ApiError_1.default(http_status_1.default.BAD_REQUEST, "User already exists");
     }
     const hashedPassword = yield (0, user_utils_1.hashPassword)(payload.password);
-    const userData = Object.assign(Object.assign({}, payload), { password: hashedPassword });
+    const userData = Object.assign(Object.assign({}, payload), { password: hashedPassword, isActive: false });
     const res = yield prisma_1.default.user.create({
         data: userData,
     });
@@ -41,11 +42,11 @@ const createUserIntoDB = (payload) => __awaiter(void 0, void 0, void 0, function
         email: payload.email,
         profilePic: payload.image || "",
         role: client_1.UserRole.USER,
-        isActive: false,
+        isActive: true,
     };
     const accessToken = (0, auth_utils_1.createToken)(jwtPayload, config_1.default.jwtAccessSecret, config_1.default.jwtAccessExpiresIn);
-    // const confirmLink = `${config.backendUrl}/auth/active/${accessToken}`;
-    // await sendEmail(payload?.email, undefined, confirmLink);
+    const confirmLink = `${config_1.default.backendUrl}/auth/active/${accessToken}`;
+    yield (0, sendEmail_1.sendEmail)(payload === null || payload === void 0 ? void 0 : payload.email, undefined, confirmLink);
     return {
         accessToken,
         res,

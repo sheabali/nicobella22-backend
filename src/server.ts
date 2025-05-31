@@ -3,17 +3,15 @@ import app from "./app";
 import config from "./app/config";
 
 let server: Server;
-
 const main = async () => {
   try {
-    server = app.listen(Number(config.port), "10.0.10.12", () => {
-      console.log(`🚀 App is listening on port: 10.0.10.12`);
+    server = app.listen(config.port, () => {
+      console.log(`🚀 App is listening on port: ${config.port}`);
     });
   } catch (err) {
     console.log(err);
   }
 };
-
 main();
 
 process.on("unhandledRejection", () => {

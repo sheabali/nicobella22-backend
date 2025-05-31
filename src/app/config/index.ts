@@ -11,6 +11,11 @@ export default {
     email: process.env.EMAIL,
     app_pass: process.env.APP_PASS,
   },
+  sendEmail: {
+    email_from: process.env.EMAIL_FROM,
+    brevo_pass: process.env.BREVO_PASS,
+    brevo_email: process.env.BREVO_EMAIL,
+  },
   cloudinaryCloudName: process.env.CLOUDINARY_CLOUD_NAME,
   cloudinaryAPISecret: process.env.CLOUDINARY_API_SECRET,
   cloudinaryAPIKey: process.env.CLOUDINARY_API_KEY,
@@ -21,4 +26,6 @@ export default {
   jwtResetPasswordExpiresIn: process.env.JWT_RESET_PASS_ACCESS_EXPIRES_IN,
   jwtRefreshExpiresIn: process.env.JWT_REFRESH_EXPIRES_IN,
   backendUrl: process.env.BACKEND_URL,
+  frontend_url: process.env.FRONTEND_URL,
+  jwt_reset_password_expiresin: process.env.JWT_RESET_PASSWORD_EXPIRESIN,
 };

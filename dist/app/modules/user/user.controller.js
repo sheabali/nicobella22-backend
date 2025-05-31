@@ -21,7 +21,6 @@ const createUser = (0, catchAsync_1.default)((req, res) => __awaiter(void 0, voi
     if (req.file) {
         req.body.image = `/uploads/${req.file.filename}`;
     }
-    console.log("aa", req.body);
     const result = yield user_service_1.UserService.createUserIntoDB(req.body);
     res.cookie("accessToken", result.accessToken, {
         httpOnly: true,

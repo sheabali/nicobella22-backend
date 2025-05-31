@@ -3,6 +3,7 @@ import status from "http-status";
 import config from "../../config";
 import ApiError from "../../errors/ApiError";
 import prisma from "../../utils/prisma";
+import { sendEmail } from "../../utils/sendEmail";
 import { verifyToken } from "../../utils/verifyToken";
 import { createToken } from "../auth/auth.utils";
 import { hashPassword } from "./user.utils";
@@ -22,6 +23,7 @@ const createUserIntoDB = async (payload: User) => {
   const userData = {
     ...payload,
     password: hashedPassword,
+    isActive: false,
   };
 
   const res = await prisma.user.create({
@@ -35,7 +37,7 @@ const createUserIntoDB = async (payload: User) => {
     email: payload.email,
     profilePic: payload.image || "",
     role: UserRole.USER,
-    isActive: false,
+    isActive: true,
   };
 
   const accessToken = createToken(
@@ -44,9 +46,9 @@ const createUserIntoDB = async (payload: User) => {
     config.jwtAccessExpiresIn as string
   );
 
-  // const confirmLink = `${config.backendUrl}/auth/active/${accessToken}`;
+  const confirmLink = `${config.backendUrl}/auth/active/${accessToken}`;
 
-  // await sendEmail(payload?.email, undefined, confirmLink);
+  await sendEmail(payload?.email, undefined, confirmLink);
 
   return {
     accessToken,

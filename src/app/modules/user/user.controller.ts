@@ -9,8 +9,6 @@ const createUser = catchAsync(async (req, res) => {
     req.body.image = `/uploads/${req.file.filename}`;
   }
 
-  console.log("aa", req.body);
-
   const result = await UserService.createUserIntoDB(req.body);
 
   res.cookie("accessToken", result.accessToken, {

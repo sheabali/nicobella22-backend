@@ -88,6 +88,7 @@ const changePassword = (userId, currentPassword, newPassword) => __awaiter(void 
 });
 const forgotPassword = (email) => __awaiter(void 0, void 0, void 0, function* () {
     const user = yield prisma_1.default.user.findUnique({ where: { email } });
+    console.log(user === null || user === void 0 ? void 0 : user.email);
     if (!user) {
         throw new ApiError_1.default(http_status_1.default.NOT_FOUND, "User not found!");
     }
@@ -104,8 +105,9 @@ const forgotPassword = (email) => __awaiter(void 0, void 0, void 0, function* ()
         isActive: user.isActive,
     };
     console.log("jwtPayload", jwtPayload);
-    const resetToken = (0, auth_utils_1.createToken)(jwtPayload, config_1.default.jwtAccessSecret, config_1.default.jwtResetPasswordExpiresIn);
+    const resetToken = (0, auth_utils_1.createToken)(jwtPayload, config_1.default.jwtAccessSecret, config_1.default.jwt_reset_password_expiresin);
     const resetLink = `${config_1.default.backendUrl}/auth/reset-password/${resetToken}`;
+    console.log("resetLink", resetLink);
     yield (0, sendEmail_1.sendEmail)(user.email, resetLink);
     return {
         message: "Password reset link sent to your email.",

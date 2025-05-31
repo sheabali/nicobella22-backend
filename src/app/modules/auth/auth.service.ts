@@ -103,6 +103,7 @@ const changePassword = async (
 
 const forgotPassword = async (email: string) => {
   const user = await prisma.user.findUnique({ where: { email } });
+  console.log(user?.email);
 
   if (!user) {
     throw new ApiError(status.NOT_FOUND, "User not found!");
@@ -126,10 +127,11 @@ const forgotPassword = async (email: string) => {
   const resetToken = createToken(
     jwtPayload,
     config.jwtAccessSecret as string,
-    config.jwtResetPasswordExpiresIn as string
+    config.jwt_reset_password_expiresin as string
   );
 
   const resetLink = `${config.backendUrl}/auth/reset-password/${resetToken}`;
+  console.log("resetLink", resetLink);
 
   await sendEmail(user.email, resetLink);
 
