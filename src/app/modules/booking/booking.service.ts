@@ -161,7 +161,7 @@ const getAllBooking = async (
       where: { email: authUser.email },
     });
 
-    console.log(user);
+    console.log("user", user);
 
     if (!user) {
       throw new ApiError(StatusCodes.NOT_FOUND, "User not found");
@@ -184,7 +184,7 @@ const getAllBooking = async (
       if (!authUser.id) {
         throw new ApiError(StatusCodes.BAD_REQUEST, "Mechanic ID is required");
       }
-      rawFilter.mechanicId = user.mechanicId;
+      rawFilter.mechanicId = user.id;
     }
 
     const builder = new QueryBuilder(prisma.booking, query);

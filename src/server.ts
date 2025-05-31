@@ -5,8 +5,8 @@ import config from "./app/config";
 let server: Server;
 const main = async () => {
   try {
-    server = app.listen(config.port, () => {
-      console.log(`🚀 App is listening on port: ${config.port}`);
+    server = app.listen(Number(config.port), "10.0.10.12", () => {
+      console.log(`🚀 App is listening on port: 10.0.10.12:${config.port}`);
     });
   } catch (err) {
     console.log(err);

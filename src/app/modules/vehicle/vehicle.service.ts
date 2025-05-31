@@ -5,10 +5,9 @@ import prisma from "../../utils/prisma";
 
 const createVehicle = async (
   payload: Vehicle,
-
   authUser: { id: string; role: string; mechanicId?: string; email: string }
 ) => {
-  console.log("aag", payload);
+  console.log("vech", payload);
 
   const user = await prisma.user.findUnique({
     where: { email: authUser.email },
