@@ -130,7 +130,7 @@ const forgotPassword = async (email: string) => {
     config.jwt_reset_password_expiresin as string
   );
 
-  const resetLink = `${config.backendUrl}/auth/reset-password/${resetToken}`;
+  const resetLink = `${config.frontend_url}/auth/reset-password?token=${resetToken}`;
   console.log("resetLink", resetLink);
 
   await sendEmail(user.email, resetLink);

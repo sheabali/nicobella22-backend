@@ -24,7 +24,7 @@ app.use(express_1.default.json());
 app.use("/uploads", express_1.default.static(path_1.default.join(process.cwd(), "uploads")));
 app.use((0, cors_1.default)({
     origin: [
-        "http://localhost:2021",
+        "http://localhost:6010",
         "https://nicobella22-front-end.vercel.app",
     ],
     credentials: true,

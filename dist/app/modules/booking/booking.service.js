@@ -126,7 +126,7 @@ const getAllBooking = (query, authUser) => __awaiter(void 0, void 0, void 0, fun
         const user = yield prisma_1.default.user.findUnique({
             where: { email: authUser.email },
         });
-        console.log(user);
+        console.log("user", user);
         if (!user) {
             throw new ApiError_1.default(http_status_codes_1.StatusCodes.NOT_FOUND, "User not found");
         }
@@ -144,7 +144,7 @@ const getAllBooking = (query, authUser) => __awaiter(void 0, void 0, void 0, fun
             if (!authUser.id) {
                 throw new ApiError_1.default(http_status_codes_1.StatusCodes.BAD_REQUEST, "Mechanic ID is required");
             }
-            rawFilter.mechanicId = user.mechanicId;
+            rawFilter.mechanicId = user.id;
         }
         const builder = new QueryBuilder_1.default(prisma_1.default.booking, query);
         const bookings = yield builder
