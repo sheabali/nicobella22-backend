@@ -106,7 +106,7 @@ const forgotPassword = (email) => __awaiter(void 0, void 0, void 0, function* ()
     };
     console.log("jwtPayload", jwtPayload);
     const resetToken = (0, auth_utils_1.createToken)(jwtPayload, config_1.default.jwtAccessSecret, config_1.default.jwt_reset_password_expiresin);
-    const resetLink = `${config_1.default.backendUrl}/auth/reset-password/${resetToken}`;
+    const resetLink = `${config_1.default.frontend_url}/auth/reset-password?token=${resetToken}`;
     console.log("resetLink", resetLink);
     yield (0, sendEmail_1.sendEmail)(user.email, resetLink);
     return {

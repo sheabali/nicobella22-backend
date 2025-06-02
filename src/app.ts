@@ -13,7 +13,7 @@ app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 app.use(
   cors({
     origin: [
-      "http://localhost:2021",
+      "http://localhost:6010",
       "https://nicobella22-front-end.vercel.app",
     ],
     credentials: true,

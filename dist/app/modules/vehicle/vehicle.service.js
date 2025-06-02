@@ -16,7 +16,7 @@ exports.VehicleService = void 0;
 const ApiError_1 = __importDefault(require("../../errors/ApiError"));
 const prisma_1 = __importDefault(require("../../utils/prisma"));
 const createVehicle = (payload, authUser) => __awaiter(void 0, void 0, void 0, function* () {
-    console.log("aag", payload);
+    console.log("vech", payload);
     const user = yield prisma_1.default.user.findUnique({
         where: { email: authUser.email },
     });
